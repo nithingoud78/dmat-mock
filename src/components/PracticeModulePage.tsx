@@ -19,6 +19,7 @@ import type { Question, SectionState } from "@/lib/test-types";
 import { TestRunner } from "@/components/TestRunner";
 import { useAuth } from "@/lib/auth";
 import { getOrCreateSessionToken } from "@/lib/session";
+import { markQuestionsAsSeen } from "@/lib/history";
 import { ExamLayout } from "@/components/ExamLayout";
 import { toast } from "sonner";
 import { CheckCircle2, Clock, ListChecks, Play, Timer, XCircle } from "lucide-react";
@@ -62,6 +63,7 @@ export function PracticeModulePage({ moduleId }: { moduleId: ModuleId }) {
       setMode("landing");
       return;
     }
+    markQuestionsAsSeen(qs.map((q) => q.id));
     const seconds = mod.minutes * 60;
     const initial: SectionState = {
       moduleId,

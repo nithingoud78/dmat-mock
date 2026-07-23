@@ -20,6 +20,7 @@ import { TestRunner } from "@/components/TestRunner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { getOrCreateSessionToken } from "@/lib/session";
+import { markQuestionsAsSeen } from "@/lib/history";
 import { ExamLayout } from "@/components/ExamLayout";
 import { toast } from "sonner";
 import { Play } from "lucide-react";
@@ -82,6 +83,8 @@ function CustomPracticePage() {
       if (qs.length < count) {
         toast.info(`Only found ${qs.length} questions matching your criteria.`);
       }
+
+      markQuestionsAsSeen(qs.map(q => q.id));
 
       const seconds = timeLimit * 60;
       const initial: SectionState = {

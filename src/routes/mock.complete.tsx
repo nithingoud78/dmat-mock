@@ -11,7 +11,8 @@ import { MODULES, MODULE_ORDER, type ModuleId } from "@/lib/modules";
 import { fetchQuestions } from "@/lib/questions";
 import type { SectionState, Question } from "@/lib/test-types";
 import { useAuth } from "@/lib/auth";
-import { getOrCreateSessionToken, sessionToMockSetIndex } from "@/lib/session";
+import { getOrCreateSessionToken } from "@/lib/session";
+import { markQuestionsAsSeen } from "@/lib/history";
 import { formatMMSS } from "@/lib/time";
 import { toast } from "sonner";
 import {
@@ -132,8 +133,8 @@ function CompleteMock() {
   const start = async () => {
     setPhase("loading");
 
-    // Try to fetch a deterministic mock set for Core Module sections
-    const mockIndex = sessionToMockSetIndex(sessionToken, 100) + 1;
+    // Fetch a completely random mock set instead of deterministic hashing
+    const mockIndex = Math.floor(Math.random() * 100) + 1;
     const { data: mockSet } = await supabase
       .from("mock_sets")
       .select("*")
@@ -190,6 +191,17 @@ function CompleteMock() {
     }
 
     const allIds = built.flatMap((s) => s.questions.map((q) => q.id));
+
+    // Validate duplicate IDs
+    const uniqueIds = new Set(allIds);
+    if (uniqueIds.size !== allIds.length) {
+      toast.error("Duplicate questions detected in generated mock test. Please try again.");
+      setPhase("instructions");
+      return;
+    }
+
+    // Mark these as seen so practice sessions avoid them
+    markQuestionsAsSeen(allIds);
 
     if (user) {
       const { data, error } = await supabase

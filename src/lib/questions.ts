@@ -1,7 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Question } from "@/lib/test-types";
 import type { ModuleId } from "@/lib/modules";
-
+import { shuffleArray } from "@/lib/utils";
+import { getSeenQuestionIds, clearSeenQuestions } from "@/lib/history";
 function mapQuestionRow(r: any): Question {
   return {
     id: r.id,
@@ -32,8 +33,36 @@ export async function fetchQuestions(
   if (opts.difficulty && opts.difficulty !== "all") query = query.eq("difficulty", opts.difficulty);
   const { data, error } = await query;
   if (error) throw error;
-  const shuffled = (data ?? []).sort(() => Math.random() - 0.5);
-  const sliced = opts.limit ? shuffled.slice(0, opts.limit) : shuffled;
+  
+  const allQs = data ?? [];
+  if (allQs.length === 0) return [];
+
+  // Get unseen questions
+  const seen = getSeenQuestionIds();
+  const unseenQs = allQs.filter(q => !seen.has(q.id));
+  const seenQs = allQs.filter(q => seen.has(q.id));
+
+  // If we don't have enough unseen questions to fulfill the limit, 
+  // clear the history for this module's IDs so they can cycle again.
+  const targetCount = opts.limit ?? allQs.length;
+  if (unseenQs.length < targetCount) {
+    clearSeenQuestions(allQs.map(q => q.id));
+  }
+
+  // Shuffle pools independently
+  const shuffledUnseen = shuffleArray(unseenQs);
+  const shuffledSeen = shuffleArray(seenQs);
+
+  // Combine unseen first, then fallback to seen
+  const combined = [...shuffledUnseen, ...shuffledSeen];
+  const sliced = combined.slice(0, targetCount);
+
+  // Validate duplicate IDs (Safety net)
+  const uniqueIds = new Set(sliced.map(q => q.id));
+  if (uniqueIds.size !== sliced.length) {
+    console.error("Duplicate questions detected in fetchQuestions selection!");
+  }
+
   return sliced.map(mapQuestionRow);
 }
 
@@ -68,7 +97,22 @@ export async function buildCustomTest(criteria: {
   const { data, error } = await query;
   if (error) throw error;
 
-  // Simple randomization and limit for now
-  const shuffled = (data ?? []).sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, criteria.count).map(mapQuestionRow);
+  const allQs = data ?? [];
+  if (allQs.length === 0) return [];
+
+  const seen = getSeenQuestionIds();
+  const unseenQs = allQs.filter(q => !seen.has(q.id));
+  const seenQs = allQs.filter(q => seen.has(q.id));
+
+  if (unseenQs.length < criteria.count) {
+    clearSeenQuestions(allQs.map(q => q.id));
+  }
+
+  const shuffledUnseen = shuffleArray(unseenQs);
+  const shuffledSeen = shuffleArray(seenQs);
+
+  const combined = [...shuffledUnseen, ...shuffledSeen];
+  const sliced = combined.slice(0, criteria.count);
+
+  return sliced.map(mapQuestionRow);
 }
