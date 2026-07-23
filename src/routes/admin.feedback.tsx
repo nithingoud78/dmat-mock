@@ -13,7 +13,6 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { format } from "date-fns";
 import { Eye, Trash2, CheckCircle, MailOpen } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -149,7 +148,7 @@ function AdminFeedbackPage() {
                       onClick={() => handleRowClick(fb)}
                     >
                       <TableCell className="text-muted-foreground whitespace-nowrap">
-                        {format(new Date(fb.created_at), "MMM d, yyyy")}
+                        {new Date(fb.created_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
                       </TableCell>
                       <TableCell className="font-medium">{fb.category}</TableCell>
                       <TableCell>
@@ -182,7 +181,7 @@ function AdminFeedbackPage() {
               {selectedFeedback && getStatusBadge(selectedFeedback.status)}
             </DialogTitle>
             <DialogDescription>
-              Submitted on {selectedFeedback && format(new Date(selectedFeedback.created_at), "MMMM d, yyyy 'at' h:mm a")}
+              Submitted on {selectedFeedback && new Date(selectedFeedback.created_at).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", hour12: true })}
             </DialogDescription>
           </DialogHeader>
 
