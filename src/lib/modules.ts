@@ -6,7 +6,8 @@ export const MODULES: Record<
     id: ModuleId;
     label: string;
     slug: string;
-    questions: number;
+    questions: number; // Internal logic limit for mock generation
+    displayQuestions: string; // What the user sees officially
     minutes: number;
     icon: string;
     description: string;
@@ -17,6 +18,7 @@ export const MODULES: Record<
     label: "Figure Sequences",
     slug: "figure-sequences",
     questions: 20,
+    displayQuestions: "20",
     minutes: 25,
     icon: "🧩",
     description:
@@ -27,6 +29,7 @@ export const MODULES: Record<
     label: "Mathematical Equations",
     slug: "mathematical-equations",
     questions: 20,
+    displayQuestions: "20",
     minutes: 25,
     icon: "➗",
     description:
@@ -37,6 +40,7 @@ export const MODULES: Record<
     label: "Latin Squares",
     slug: "latin-squares",
     questions: 20,
+    displayQuestions: "20",
     minutes: 25,
     icon: "🔲",
     description:
@@ -46,7 +50,8 @@ export const MODULES: Record<
     id: "general_academic",
     label: "General Academic",
     slug: "general-academic",
-    questions: 20,
+    questions: 22,
+    displayQuestions: "Not publicly specified",
     minutes: 90,
     icon: "📚",
     description:

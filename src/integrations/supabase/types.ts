@@ -168,6 +168,36 @@ export type Database = {
           },
         ];
       };
+      feedback: {
+        Row: {
+          id: string;
+          created_at: string;
+          name: string | null;
+          email: string | null;
+          category: string;
+          message: string;
+          status: string;
+        };
+        Insert: {
+          id?: string;
+          created_at?: string;
+          name?: string | null;
+          email?: string | null;
+          category: string;
+          message: string;
+          status?: string;
+        };
+        Update: {
+          id?: string;
+          created_at?: string;
+          name?: string | null;
+          email?: string | null;
+          category?: string;
+          message?: string;
+          status?: string;
+        };
+        Relationships: [];
+      };
       homepage_content: {
         Row: {
           content: Json;
@@ -218,6 +248,7 @@ export type Database = {
           created_at: string;
           display_name: string | null;
           email: string | null;
+          seen_questions: string[];
           id: string;
           updated_at: string;
         };
@@ -226,6 +257,7 @@ export type Database = {
           display_name?: string | null;
           email?: string | null;
           id: string;
+          seen_questions?: string[];
           updated_at?: string;
         };
         Update: {
@@ -233,6 +265,7 @@ export type Database = {
           display_name?: string | null;
           email?: string | null;
           id?: string;
+          seen_questions?: string[];
           updated_at?: string;
         };
         Relationships: [];

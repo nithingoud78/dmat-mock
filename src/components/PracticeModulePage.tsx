@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { PublicLayout } from "@/components/PublicLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,10 +19,9 @@ import type { Question, SectionState } from "@/lib/test-types";
 import { TestRunner } from "@/components/TestRunner";
 import { useAuth } from "@/lib/auth";
 import { getOrCreateSessionToken } from "@/lib/session";
-import { markQuestionsAsSeenAsync } from "@/lib/history";
 import { ExamLayout } from "@/components/ExamLayout";
 import { toast } from "sonner";
-import { CheckCircle2, Clock, ListChecks, Play, Timer, XCircle, EyeOff } from "lucide-react";
+import { CheckCircle2, Clock, ListChecks, Play, Timer, XCircle, EyeOff, RotateCcw } from "lucide-react";
 
 type Difficulty = "easy" | "medium" | "hard" | "all";
 
@@ -41,6 +40,7 @@ export function PracticeModulePage({ moduleId }: { moduleId: ModuleId }) {
   } | null>(null);
   const { user } = useAuth();
   const sessionToken = getOrCreateSessionToken();
+  const qc = useQueryClient();
 
   const { data: count } = useQuery({
     queryKey: ["qcount", moduleId, difficulty],
@@ -55,21 +55,6 @@ export function PracticeModulePage({ moduleId }: { moduleId: ModuleId }) {
     },
   });
 
-  const { data: seenCount } = useQuery({
-    queryKey: ["seenCount", moduleId, user?.id],
-    queryFn: async () => {
-      const ids = await import("@/lib/history").then((m) => m.getSeenQuestionIdsAsync());
-      if (ids.size === 0) return 0;
-      
-      const { count } = await supabase
-        .from("questions")
-        .select("id", { count: "exact", head: true })
-        .eq("module", moduleId)
-        .in("id", Array.from(ids));
-      return count ?? 0;
-    }
-  });
-
   const startSession = async (kind: "practice" | "timed") => {
     setMode("loading");
     const qs = await fetchQuestions(moduleId, { difficulty, limit: mod.questions });
@@ -78,7 +63,6 @@ export function PracticeModulePage({ moduleId }: { moduleId: ModuleId }) {
       setMode("landing");
       return;
     }
-    markQuestionsAsSeenAsync(qs.map((q) => q.id));
     const seconds = mod.minutes * 60;
     const initial: SectionState = {
       moduleId,
@@ -339,9 +323,7 @@ export function PracticeModulePage({ moduleId }: { moduleId: ModuleId }) {
           <Badge variant="secondary" className="gap-1 py-1">
             <ListChecks className="h-3 w-3" /> {count ?? "…"} total
           </Badge>
-          <Badge variant="secondary" className="gap-1 py-1 bg-primary/10 text-primary hover:bg-primary/20">
-            <EyeOff className="h-3 w-3" /> {count !== undefined && seenCount !== undefined ? Math.max(0, count - seenCount) : "…"} unseen available
-          </Badge>
+
           <Badge variant="secondary" className="gap-1 py-1">
             <Clock className="h-3 w-3" /> {mod.minutes} min · {mod.questions} Qs (real exam)
           </Badge>
@@ -370,9 +352,9 @@ export function PracticeModulePage({ moduleId }: { moduleId: ModuleId }) {
               <Timer className="mr-2 h-4 w-4" /> Start Timed Practice ({mod.minutes} min)
             </Button>
           </div>
-          <p className="mt-3 text-xs text-muted-foreground">
-            No sign-in required. Both practice modes work anonymously.
-          </p>
+            <p className="text-xs text-muted-foreground">
+              No sign-in required. Both practice modes work anonymously.
+            </p>
         </Card>
       </div>
     </PublicLayout>

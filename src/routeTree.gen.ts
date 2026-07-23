@@ -12,10 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 import { Route as AdminDashboardRouteImport } from './routes/admin.dashboard'
+import { Route as AdminFeedbackRouteImport } from './routes/admin.feedback'
 import { Route as AdminHomeRouteImport } from './routes/admin.home'
 import { Route as AdminQuestionsRouteImport } from './routes/admin.questions'
 import { Route as MockCompleteRouteImport } from './routes/mock.complete'
@@ -42,6 +44,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FeedbackRoute = FeedbackRouteImport.update({
+  id: '/feedback',
+  path: '/feedback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HistoryRoute = HistoryRouteImport.update({
   id: '/history',
   path: '/history',
@@ -60,6 +67,11 @@ const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
 const AdminDashboardRoute = AdminDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminFeedbackRoute = AdminFeedbackRouteImport.update({
+  id: '/feedback',
+  path: '/feedback',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminHomeRoute = AdminHomeRouteImport.update({
@@ -118,9 +130,11 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
+  '/feedback': typeof FeedbackRoute
   '/history': typeof HistoryRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/feedback': typeof AdminFeedbackRoute
   '/admin/home': typeof AdminHomeRoute
   '/admin/questions': typeof AdminQuestionsRoute
   '/mock/complete': typeof MockCompleteRoute
@@ -136,9 +150,11 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/feedback': typeof FeedbackRoute
   '/history': typeof HistoryRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/feedback': typeof AdminFeedbackRoute
   '/admin/home': typeof AdminHomeRoute
   '/admin/questions': typeof AdminQuestionsRoute
   '/mock/complete': typeof MockCompleteRoute
@@ -156,9 +172,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
+  '/feedback': typeof FeedbackRoute
   '/history': typeof HistoryRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/feedback': typeof AdminFeedbackRoute
   '/admin/home': typeof AdminHomeRoute
   '/admin/questions': typeof AdminQuestionsRoute
   '/mock/complete': typeof MockCompleteRoute
@@ -177,9 +195,11 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/feedback'
     | '/history'
     | '/admin/analytics'
     | '/admin/dashboard'
+    | '/admin/feedback'
     | '/admin/home'
     | '/admin/questions'
     | '/mock/complete'
@@ -195,9 +215,11 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/feedback'
     | '/history'
     | '/admin/analytics'
     | '/admin/dashboard'
+    | '/admin/feedback'
     | '/admin/home'
     | '/admin/questions'
     | '/mock/complete'
@@ -214,9 +236,11 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/feedback'
     | '/history'
     | '/admin/analytics'
     | '/admin/dashboard'
+    | '/admin/feedback'
     | '/admin/home'
     | '/admin/questions'
     | '/mock/complete'
@@ -234,6 +258,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
+  FeedbackRoute: typeof FeedbackRoute
   HistoryRoute: typeof HistoryRoute
   MockCompleteRoute: typeof MockCompleteRoute
   MockSessionResultRoute: typeof MockSessionResultRoute
@@ -268,6 +293,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/feedback': {
+      id: '/feedback'
+      path: '/feedback'
+      fullPath: '/feedback'
+      preLoaderRoute: typeof FeedbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/history': {
       id: '/history'
       path: '/history'
@@ -294,6 +326,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/admin/dashboard'
       preLoaderRoute: typeof AdminDashboardRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/feedback': {
+      id: '/admin/feedback'
+      path: '/feedback'
+      fullPath: '/admin/feedback'
+      preLoaderRoute: typeof AdminFeedbackRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/home': {
@@ -372,6 +411,7 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminFeedbackRoute: typeof AdminFeedbackRoute
   AdminHomeRoute: typeof AdminHomeRoute
   AdminQuestionsRoute: typeof AdminQuestionsRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -380,6 +420,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminDashboardRoute: AdminDashboardRoute,
+  AdminFeedbackRoute: AdminFeedbackRoute,
   AdminHomeRoute: AdminHomeRoute,
   AdminQuestionsRoute: AdminQuestionsRoute,
   AdminIndexRoute: AdminIndexRoute,
@@ -391,6 +432,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
+  FeedbackRoute: FeedbackRoute,
   HistoryRoute: HistoryRoute,
   MockCompleteRoute: MockCompleteRoute,
   MockSessionResultRoute: MockSessionResultRoute,

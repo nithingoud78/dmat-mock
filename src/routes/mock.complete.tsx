@@ -12,8 +12,8 @@ import { fetchQuestions } from "@/lib/questions";
 import type { SectionState, Question } from "@/lib/test-types";
 import { useAuth } from "@/lib/auth";
 import { getOrCreateSessionToken } from "@/lib/session";
-import { markQuestionsAsSeenAsync } from "@/lib/history";
 import { formatMMSS } from "@/lib/time";
+import { calculateRawScore, getScoringEngine } from "@/lib/scoring";
 import { toast } from "sonner";
 import {
   AlertTriangle,
@@ -68,7 +68,8 @@ function CompleteMock() {
   const [attemptId, setAttemptId] = useState<string | undefined>();
   const [sessionToken] = useState(() => getOrCreateSessionToken());
   const [breakSecondsLeft, setBreakSecondsLeft] = useState(BREAK_SECONDS);
-  const breakIntervalRef = useRef<number | undefined>(undefined);
+  const [transitionSecondsLeft, setTransitionSecondsLeft] = useState(120); // 2 minutes
+  const timerIntervalRef = useRef<number | undefined>(undefined);
 
   // ── Fetch instructions from CMS ─────────────────────────────────────────
   const { data: instr } = useQuery({
@@ -105,27 +106,38 @@ function CompleteMock() {
     return () => window.removeEventListener("beforeunload", h);
   }, [phase]);
 
-  // ── Break countdown ──────────────────────────────────────────────────────
+  // ── Break / Transition countdown ─────────────────────────────────────────
   useEffect(() => {
-    if (phase !== "break") {
-      if (breakIntervalRef.current) {
-        clearInterval(breakIntervalRef.current);
-        breakIntervalRef.current = undefined;
+    if (phase !== "break" && phase !== "transition") {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = undefined;
       }
       return;
     }
-    breakIntervalRef.current = window.setInterval(() => {
-      setBreakSecondsLeft((s) => {
-        if (s <= 1) {
-          clearInterval(breakIntervalRef.current);
-          startNextSection();
-          return 0;
-        }
-        return s - 1;
-      });
+    timerIntervalRef.current = window.setInterval(() => {
+      if (phase === "break") {
+        setBreakSecondsLeft((s) => {
+          if (s <= 1) {
+            clearInterval(timerIntervalRef.current);
+            startNextSection();
+            return 0;
+          }
+          return s - 1;
+        });
+      } else if (phase === "transition") {
+        setTransitionSecondsLeft((s) => {
+          if (s <= 1) {
+            clearInterval(timerIntervalRef.current);
+            startNextSection();
+            return 0;
+          }
+          return s - 1;
+        });
+      }
     }, 1000);
     return () => {
-      if (breakIntervalRef.current) clearInterval(breakIntervalRef.current);
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     };
   }, [phase]);
 
@@ -200,8 +212,6 @@ function CompleteMock() {
       return;
     }
 
-    // Mark these as seen so practice sessions avoid them
-    markQuestionsAsSeenAsync(allIds);
 
     if (user) {
       const { data, error } = await supabase
@@ -258,6 +268,7 @@ function CompleteMock() {
       setPhase("break");
     } else {
       // Show transition screen
+      setTransitionSecondsLeft(120);
       setCurrent(current + 1);
       setPhase("transition");
     }
@@ -269,26 +280,54 @@ function CompleteMock() {
 
   // ── Finalize (compute results + navigate) ────────────────────────────────
   const finalize = async (all: SectionState[]) => {
-    let correct = 0,
-      incorrect = 0,
-      skipped = 0;
-    const answerMap: Record<string, string | null> = {};
     let durationSec = 0;
+    
+    // We separate Core (first 3) and GAM (last 1)
+    const coreSections = all.slice(0, 3);
+    const gamSection = all[3]; // assuming index 3 is GAM
 
-    for (const s of all) {
+    let coreCorrect = 0, coreIncorrect = 0, coreSkipped = 0, coreTotalQs = 0;
+    const answerMap: Record<string, string | null> = {};
+
+    // Core
+    for (const s of coreSections) {
+      if (!s) continue;
       for (const q of s.questions) {
         const a = s.answers[q.id];
-        if (!a) skipped++;
-        else if (a === q.correct_option_id) correct++;
-        else incorrect++;
+        if (!a) coreSkipped++;
+        else if (a === q.correct_option_id) coreCorrect++;
+        else coreIncorrect++;
         answerMap[q.id] = a ?? null;
       }
+      coreTotalQs += s.questions.length;
       durationSec += s.totalSeconds - Math.max(0, s.secondsLeft);
     }
 
-    const total = correct + incorrect + skipped;
-    const score = Math.round((correct / Math.max(1, total)) * 200);
-    const accuracy = total ? +((correct / total) * 100).toFixed(2) : 0;
+    // GAM
+    let gamCorrect = 0, gamIncorrect = 0, gamSkipped = 0, gamTotalQs = 0;
+    if (gamSection) {
+      for (const q of gamSection.questions) {
+        const a = gamSection.answers[q.id];
+        if (!a) gamSkipped++;
+        else if (a === q.correct_option_id) gamCorrect++;
+        else gamIncorrect++;
+        answerMap[q.id] = a ?? null;
+      }
+      gamTotalQs += gamSection.questions.length;
+      durationSec += gamSection.totalSeconds - Math.max(0, gamSection.secondsLeft);
+    }
+
+    const scoringEngine = getScoringEngine();
+
+    const coreScaled = scoringEngine.calculateScaledScore(coreCorrect, coreTotalQs, 'core');
+    const gamScaled = scoringEngine.calculateScaledScore(gamCorrect, gamTotalQs, 'gam');
+    const result = scoringEngine.aggregateMockResults(coreScaled, gamScaled);
+
+    const totalCorrect = coreCorrect + gamCorrect;
+    const totalIncorrect = coreIncorrect + gamIncorrect;
+    const totalSkipped = coreSkipped + gamSkipped;
+    const totalQuestions = coreTotalQs + gamTotalQs;
+    const accuracy = totalQuestions ? +((totalCorrect / totalQuestions) * 100).toFixed(2) : 0;
 
     let tabSwitches = 0;
     if (attemptId) {
@@ -316,12 +355,20 @@ function CompleteMock() {
         .update({
           submitted_at: new Date().toISOString(),
           status: "submitted",
-          score,
+          score: result.total.scaledScore,
           accuracy,
-          correct_count: correct,
-          incorrect_count: incorrect,
-          skipped_count: skipped,
+          correct_count: totalCorrect,
+          incorrect_count: totalIncorrect,
+          skipped_count: totalSkipped,
           duration_seconds: durationSec,
+          core_raw_score: coreCorrect,
+          gam_raw_score: gamCorrect,
+          core_scaled_score: result.core.scaledScore,
+          gam_scaled_score: result.gam.scaledScore,
+          total_scaled_score: result.total.scaledScore,
+          core_percentile: result.core.percentile,
+          gam_percentile: result.gam.percentile,
+          total_percentile: result.total.percentile,
         })
         .eq("id", attemptId);
       await supabase.from("attempt_answers").insert(answerRows);
@@ -334,13 +381,21 @@ function CompleteMock() {
           .update({
             submitted_at: new Date().toISOString(),
             status: "submitted",
-            score,
+            score: result.total.scaledScore,
             accuracy,
-            correct_count: correct,
-            incorrect_count: incorrect,
-            skipped_count: skipped,
+            correct_count: totalCorrect,
+            incorrect_count: totalIncorrect,
+            skipped_count: totalSkipped,
             duration_seconds: durationSec,
             answers: answerMap,
+            core_raw_score: coreCorrect,
+            gam_raw_score: gamCorrect,
+            core_scaled_score: result.core.scaledScore,
+            gam_scaled_score: result.gam.scaledScore,
+            total_scaled_score: result.total.scaledScore,
+            core_percentile: result.core.percentile,
+            gam_percentile: result.gam.percentile,
+            total_percentile: result.total.percentile,
           })
           .eq("id", attemptId);
       }
@@ -348,10 +403,15 @@ function CompleteMock() {
       navigate({
         to: "/mock/session-result",
         search: {
-          c: correct,
-          i: incorrect,
-          s: skipped,
-          score,
+          c: totalCorrect,
+          i: totalIncorrect,
+          s: totalSkipped,
+          score: result.total.scaledScore,
+          coreScaled: result.core.scaledScore,
+          gamScaled: result.gam.scaledScore,
+          corePctl: result.core.percentile,
+          gamPctl: result.gam.percentile,
+          totalPctl: result.total.percentile,
           time: durationSec,
           switches: tabSwitches,
           sections: JSON.stringify(
@@ -490,8 +550,20 @@ function CompleteMock() {
               {nextMod.questions} questions · {nextMod.minutes} minutes
             </div>
 
-            <Button size="lg" className="mt-8 w-full font-semibold" onClick={startNextSection}>
-              Start {nextMod.label} <ArrowRight className="ml-2 h-4 w-4" />
+            <div className="mt-6 rounded-2xl border border-border bg-secondary/30 px-6 py-4">
+               <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Transition timer
+              </div>
+              <div className="mt-2 font-mono text-3xl font-bold tabular-nums text-foreground">
+                {formatMMSS(transitionSecondsLeft)}
+              </div>
+            </div>
+
+            <Button size="lg" className="mt-6 w-full font-semibold" onClick={() => {
+              if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+              startNextSection();
+            }}>
+              Skip wait — Start {nextMod.label}
             </Button>
           </Card>
         </div>
@@ -564,7 +636,7 @@ function CompleteMock() {
               size="lg"
               className="mt-8 w-full"
               onClick={() => {
-                if (breakIntervalRef.current) clearInterval(breakIntervalRef.current);
+                if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
                 startNextSection();
               }}
             >

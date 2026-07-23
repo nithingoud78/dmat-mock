@@ -16,6 +16,11 @@ export const Route = createFileRoute("/mock/session-result")({
     i: Number(search.i ?? 0),
     s: Number(search.s ?? 0),
     score: Number(search.score ?? 0),
+    coreScaled: Number(search.coreScaled ?? 0),
+    gamScaled: Number(search.gamScaled ?? 0),
+    corePctl: Number(search.corePctl ?? 0),
+    gamPctl: Number(search.gamPctl ?? 0),
+    totalPctl: Number(search.totalPctl ?? 0),
     time: Number(search.time ?? 0),
     switches: Number(search.switches ?? 0),
     sections: String(search.sections ?? "[]"),
@@ -29,6 +34,11 @@ function SessionResultPage() {
     i,
     s,
     score,
+    coreScaled,
+    gamScaled,
+    corePctl,
+    gamPctl,
+    totalPctl,
     time,
     switches,
     sections: sectionsJson,
@@ -59,10 +69,38 @@ function SessionResultPage() {
 
         {/* Score summary */}
         <div className="mt-6 grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-          <BigStat label="Overall Score" value={`${score}/200`} accent />
+          <BigStat label="Estimated Score" value={`${score}/400`} accent />
+          <BigStat label="Estimated Percentile" value={`${totalPctl}th`} />
           <BigStat label="Accuracy" value={`${accuracy}%`} />
-          <BigStat label="Correct" value={String(c)} color="text-success" />
           <BigStat label="Time Used" value={formatMMSS(time)} />
+        </div>
+
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <Card className="p-5 shadow-card border-primary/20 bg-card">
+            <div className="font-semibold text-lg mb-3 flex items-center justify-between">
+              Core Module
+              <Badge variant="outline" className="font-mono">{coreScaled}/200</Badge>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="text-xs uppercase text-muted-foreground">Est. Percentile</div>
+                <div className="text-lg font-semibold">{corePctl}th</div>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-5 shadow-card border-primary/20 bg-card">
+            <div className="font-semibold text-lg mb-3 flex items-center justify-between">
+              General Academic
+              <Badge variant="outline" className="font-mono">{gamScaled}/200</Badge>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="text-xs uppercase text-muted-foreground">Est. Percentile</div>
+                <div className="text-lg font-semibold">{gamPctl}th</div>
+              </div>
+            </div>
+          </Card>
         </div>
 
         {/* Quick breakdown */}
@@ -117,6 +155,10 @@ function SessionResultPage() {
             })}
           </div>
         )}
+
+        <div className="mt-6 rounded-lg border border-primary/20 bg-primary/5 px-5 py-4 text-sm text-foreground">
+          <strong>Note:</strong> This score is an estimated practice score designed to approximate the official dMAT reporting format. The official dMAT scaled score and percentile are calculated centrally by the TestDaF Institute using a proprietary normalization process.
+        </div>
 
         <div className="mt-4 rounded-lg border border-muted bg-secondary/30 px-4 py-3 text-xs text-muted-foreground">
           Sign in to save your results and track your progress over time.

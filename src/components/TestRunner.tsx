@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { QuestionPalette } from "@/components/QuestionPalette";
 import { SourcePopover } from "@/components/SourcePopover";
 import { QuestionDisplay } from "@/components/QuestionDisplay";
+import { QuestionErrorBoundary } from "@/components/QuestionErrorBoundary";
 import { FigureGrid } from "@/components/question-renderers/FigureSequenceRenderer";
 import {
   Dialog,
@@ -232,7 +233,9 @@ export function TestRunner({
 
           {/* Question content — visual or text */}
           <div className="flex flex-col justify-center">
-            <QuestionDisplay question={q} />
+            <QuestionErrorBoundary questionId={q.id} onSkip={() => go(section.currentIdx + 1)}>
+              <QuestionDisplay question={q} />
+            </QuestionErrorBoundary>
           </div>
 
           {/* Standard option buttons (for plain text / math with no visual_data) */}
@@ -378,9 +381,43 @@ export function TestRunner({
         </Card>
 
         {/* Palette — desktop */}
-        <div className="hidden lg:block lg:sticky lg:top-8 h-fit">
+        <div className="hidden lg:flex flex-col gap-4 lg:sticky lg:top-8 h-fit">
+          {/* Pacing Info */}
+          {isTimed && (
+            <Card className="p-4 shadow-card">
+              <div className="text-sm font-semibold mb-3">Time Management</div>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-muted-foreground">Pace</span>
+                  <span className={cn(
+                    "font-mono font-medium",
+                    (q && (section.timePerQ[q.id] || 0) > 75) ? "text-destructive" : "text-foreground"
+                  )}>
+                    {q ? formatMMSS(section.timePerQ[q.id] || 0) : "0:00"} / 1:15
+                  </span>
+                </div>
+                
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-muted-foreground">Avg Pace</span>
+                  <span className="font-mono font-medium">
+                    {formatMMSS(
+                      counts.answered > 0 
+                        ? Math.floor(Object.values(section.timePerQ).reduce((a, b) => a + b, 0) / counts.answered) 
+                        : 0
+                    )} / Q
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-muted-foreground">Progress</span>
+                  <span className="font-mono font-medium">{counts.answered}/{section.questions.length}</span>
+                </div>
+              </div>
+            </Card>
+          )}
+
           <QuestionPalette section={section} onJump={go} />
-          <div className="mt-4">
+          <div>
             <Button variant="outline" className="w-full" onClick={() => setConfirmSubmit(true)}>
               Submit section
             </Button>

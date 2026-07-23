@@ -511,3 +511,4 @@ Correctness is more important than speed.
 Quality is more important than quantity.
 
 Every change should make the application a better preparation platform without making it a different application.
+

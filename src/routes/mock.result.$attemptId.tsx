@@ -67,12 +67,43 @@ function ResultPage() {
         </div>
         <h1 className="mt-1 text-3xl font-semibold tracking-tight">Your Result</h1>
 
-        <div className="mt-6 grid gap-4 md:grid-cols-4">
-          <BigStat label="Overall score" value={`${a.score ?? 0}/200`} />
+        <div className="mt-6 grid gap-4 md:grid-cols-5">
+          <BigStat label="Est. Score" value={`${a.score ?? 0}/400`} />
+          <BigStat label="Est. Percentile" value={`${a.total_percentile ?? 0}th`} />
           <BigStat label="Accuracy" value={`${a.accuracy ?? 0}%`} />
           <BigStat label="Correct" value={String(a.correct_count)} />
           <BigStat label="Time used" value={formatMMSS(a.duration_seconds || 0)} />
         </div>
+
+        {a.mode === "complete_mock" && (
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <Card className="p-5 shadow-card border-primary/20 bg-card">
+              <div className="font-semibold text-lg mb-3 flex items-center justify-between">
+                Core Module
+                <Badge variant="outline" className="font-mono">{a.core_scaled_score ?? 0}/200</Badge>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-xs uppercase text-muted-foreground">Est. Percentile</div>
+                  <div className="text-lg font-semibold">{a.core_percentile ?? 0}th</div>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-5 shadow-card border-primary/20 bg-card">
+              <div className="font-semibold text-lg mb-3 flex items-center justify-between">
+                General Academic
+                <Badge variant="outline" className="font-mono">{a.gam_scaled_score ?? 0}/200</Badge>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-xs uppercase text-muted-foreground">Est. Percentile</div>
+                  <div className="text-lg font-semibold">{a.gam_percentile ?? 0}th</div>
+                </div>
+              </div>
+            </Card>
+          </div>
+        )}
 
         {/* Per section */}
         <div className="mt-8 space-y-6">
@@ -164,6 +195,12 @@ function ResultPage() {
             );
           })}
         </div>
+
+        {a.mode === "complete_mock" && (
+          <div className="mt-8 rounded-lg border border-primary/20 bg-primary/5 px-5 py-4 text-sm text-foreground">
+            <strong>Note:</strong> This score is an estimated practice score designed to approximate the official dMAT reporting format. The official dMAT scaled score and percentile are calculated centrally by the TestDaF Institute using a proprietary normalization process.
+          </div>
+        )}
 
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Button asChild variant="outline">

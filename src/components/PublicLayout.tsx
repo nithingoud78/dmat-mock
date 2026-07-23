@@ -10,7 +10,7 @@ import {
   LogOut,
   ShieldCheck,
   GraduationCap,
-  History as HistoryIcon,
+  MessageSquare,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import {
@@ -37,7 +37,7 @@ const items = [
   { title: "Latin Squares", url: "/practice/latin-squares", icon: Grid3x3 },
   { title: "Subject Module", url: "/practice/subject-module", icon: BookOpen },
   { title: "Complete Mock", url: "/mock/complete", icon: Target },
-  { title: "My Progress", url: "/history", icon: HistoryIcon },
+  { title: "Feedback", url: "/feedback", icon: MessageSquare },
 ] as const;
 
 function AppSidebar() {

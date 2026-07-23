@@ -2,7 +2,7 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
-import { BarChart3, FileQuestion, Home, LogOut, ShieldCheck, LayoutDashboard } from "lucide-react";
+import { BarChart3, FileQuestion, Home, LogOut, ShieldCheck, LayoutDashboard, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function AdminLayout({ children }: { children: ReactNode }) {
@@ -29,6 +29,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
     { to: "/admin/home", label: "Homepage Editor", icon: Home },
     { to: "/admin/questions", label: "Questions", icon: FileQuestion },
     { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+    { to: "/admin/feedback", label: "Feedback", icon: MessageSquare },
   ] as const;
 
   return (
