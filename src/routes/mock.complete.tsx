@@ -12,7 +12,7 @@ import { fetchQuestions } from "@/lib/questions";
 import type { SectionState, Question } from "@/lib/test-types";
 import { useAuth } from "@/lib/auth";
 import { getOrCreateSessionToken } from "@/lib/session";
-import { markQuestionsAsSeen } from "@/lib/history";
+import { markQuestionsAsSeenAsync } from "@/lib/history";
 import { formatMMSS } from "@/lib/time";
 import { toast } from "sonner";
 import {
@@ -201,7 +201,7 @@ function CompleteMock() {
     }
 
     // Mark these as seen so practice sessions avoid them
-    markQuestionsAsSeen(allIds);
+    markQuestionsAsSeenAsync(allIds);
 
     if (user) {
       const { data, error } = await supabase

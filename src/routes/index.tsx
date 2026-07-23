@@ -193,9 +193,9 @@ function HomeBody({
           </p>
         </Card>
         <Card className="p-7 shadow-card">
-          <h2 className="text-lg font-semibold">{c.aps_relevance.title}</h2>
+          <h2 className="text-lg font-semibold">{c.aps_relevant?.title ?? c.aps_relevance?.title}</h2>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            {c.aps_relevance.body}
+            {c.aps_relevant?.body ?? c.aps_relevance?.body}
           </p>
         </Card>
       </section>

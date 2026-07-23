@@ -2,7 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Question } from "@/lib/test-types";
 import type { ModuleId } from "@/lib/modules";
 import { shuffleArray } from "@/lib/utils";
-import { getSeenQuestionIds, clearSeenQuestions } from "@/lib/history";
+import { getSeenQuestionIdsAsync, clearSeenQuestionsAsync } from "@/lib/history";
 function mapQuestionRow(r: any): Question {
   return {
     id: r.id,
@@ -38,7 +38,7 @@ export async function fetchQuestions(
   if (allQs.length === 0) return [];
 
   // Get unseen questions
-  const seen = getSeenQuestionIds();
+  const seen = await getSeenQuestionIdsAsync();
   const unseenQs = allQs.filter(q => !seen.has(q.id));
   const seenQs = allQs.filter(q => seen.has(q.id));
 
@@ -46,7 +46,7 @@ export async function fetchQuestions(
   // clear the history for this module's IDs so they can cycle again.
   const targetCount = opts.limit ?? allQs.length;
   if (unseenQs.length < targetCount) {
-    clearSeenQuestions(allQs.map(q => q.id));
+    await clearSeenQuestionsAsync(allQs.map(q => q.id));
   }
 
   // Shuffle pools independently
@@ -100,12 +100,12 @@ export async function buildCustomTest(criteria: {
   const allQs = data ?? [];
   if (allQs.length === 0) return [];
 
-  const seen = getSeenQuestionIds();
+  const seen = await getSeenQuestionIdsAsync();
   const unseenQs = allQs.filter(q => !seen.has(q.id));
   const seenQs = allQs.filter(q => seen.has(q.id));
 
   if (unseenQs.length < criteria.count) {
-    clearSeenQuestions(allQs.map(q => q.id));
+    await clearSeenQuestionsAsync(allQs.map(q => q.id));
   }
 
   const shuffledUnseen = shuffleArray(unseenQs);

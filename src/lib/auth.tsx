@@ -66,6 +66,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
       if (!mounted) return;
       setSession(s);
+      if (event === "SIGNED_IN") {
+        import("@/lib/history").then((m) => m.syncHistoryOnLogin().catch(console.error));
+      }
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
         setTimeout(() => checkAdmin(s?.user?.id), 0);
         if (event !== "SIGNED_OUT") qc.invalidateQueries();

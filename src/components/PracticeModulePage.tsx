@@ -19,10 +19,10 @@ import type { Question, SectionState } from "@/lib/test-types";
 import { TestRunner } from "@/components/TestRunner";
 import { useAuth } from "@/lib/auth";
 import { getOrCreateSessionToken } from "@/lib/session";
-import { markQuestionsAsSeen } from "@/lib/history";
+import { markQuestionsAsSeenAsync } from "@/lib/history";
 import { ExamLayout } from "@/components/ExamLayout";
 import { toast } from "sonner";
-import { CheckCircle2, Clock, ListChecks, Play, Timer, XCircle } from "lucide-react";
+import { CheckCircle2, Clock, ListChecks, Play, Timer, XCircle, EyeOff } from "lucide-react";
 
 type Difficulty = "easy" | "medium" | "hard" | "all";
 
@@ -55,6 +55,21 @@ export function PracticeModulePage({ moduleId }: { moduleId: ModuleId }) {
     },
   });
 
+  const { data: seenCount } = useQuery({
+    queryKey: ["seenCount", moduleId, user?.id],
+    queryFn: async () => {
+      const ids = await import("@/lib/history").then((m) => m.getSeenQuestionIdsAsync());
+      if (ids.size === 0) return 0;
+      
+      const { count } = await supabase
+        .from("questions")
+        .select("id", { count: "exact", head: true })
+        .eq("module", moduleId)
+        .in("id", Array.from(ids));
+      return count ?? 0;
+    }
+  });
+
   const startSession = async (kind: "practice" | "timed") => {
     setMode("loading");
     const qs = await fetchQuestions(moduleId, { difficulty, limit: mod.questions });
@@ -63,7 +78,7 @@ export function PracticeModulePage({ moduleId }: { moduleId: ModuleId }) {
       setMode("landing");
       return;
     }
-    markQuestionsAsSeen(qs.map((q) => q.id));
+    markQuestionsAsSeenAsync(qs.map((q) => q.id));
     const seconds = mod.minutes * 60;
     const initial: SectionState = {
       moduleId,
@@ -322,7 +337,10 @@ export function PracticeModulePage({ moduleId }: { moduleId: ModuleId }) {
 
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <Badge variant="secondary" className="gap-1 py-1">
-            <ListChecks className="h-3 w-3" /> {count ?? "…"} questions available
+            <ListChecks className="h-3 w-3" /> {count ?? "…"} total
+          </Badge>
+          <Badge variant="secondary" className="gap-1 py-1 bg-primary/10 text-primary hover:bg-primary/20">
+            <EyeOff className="h-3 w-3" /> {count !== undefined && seenCount !== undefined ? Math.max(0, count - seenCount) : "…"} unseen available
           </Badge>
           <Badge variant="secondary" className="gap-1 py-1">
             <Clock className="h-3 w-3" /> {mod.minutes} min · {mod.questions} Qs (real exam)
