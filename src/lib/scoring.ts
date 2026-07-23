@@ -81,13 +81,8 @@ export class ApproximationScoringEngine implements ScoringEngine {
     }
 
     let config = DEFAULT_CONFIG;
-    if (moduleType === 'total') {
-      config = {
-        ...DEFAULT_CONFIG,
-        scaledMean: 200,
-        scaledSd: 66.6,
-      };
-    }
+    // All module types use the same 0-200 range config
+    // (the 'total' type previously used a 0-400 range which is now removed)
 
     const expectedMeanRaw = totalQuestions * config.expectedMeanPercentage;
     const expectedSdRaw = totalQuestions * config.expectedSdPercentage;
@@ -98,7 +93,8 @@ export class ApproximationScoringEngine implements ScoringEngine {
     }
 
     let scaledScore = Math.round(config.scaledMean + (zScore * config.scaledSd));
-    const maxScore = moduleType === 'total' ? 400 : 200;
+    // Max score for any section (core, gam, or total) is 200
+    const maxScore = 200;
     scaledScore = Math.max(0, Math.min(maxScore, scaledScore));
 
     let percentile = Math.floor(normalCdf(zScore) * 100);

@@ -68,7 +68,7 @@ function ResultPage() {
         <h1 className="mt-1 text-3xl font-semibold tracking-tight">Your Result</h1>
 
         <div className="mt-6 grid gap-4 md:grid-cols-5">
-          <BigStat label="Est. Score" value={`${a.score ?? 0}/400`} />
+          <BigStat label="Est. Score" value={`${a.score ?? 0}/200`} />
           <BigStat label="Est. Percentile" value={`${a.total_percentile ?? 0}th`} />
           <BigStat label="Accuracy" value={`${a.accuracy ?? 0}%`} />
           <BigStat label="Correct" value={String(a.correct_count)} />

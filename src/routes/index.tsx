@@ -15,6 +15,10 @@ import { Scoring } from "@/components/home/Scoring";
 import { PrepAndStrategies } from "@/components/home/PrepAndStrategies";
 import { FAQ } from "@/components/home/FAQ";
 import { OfficialResources } from "@/components/home/OfficialResources";
+import { AdSlot } from "@/components/ads/AdSlot";
+import { adsConfig } from "@/config/ads";
+import { Footer } from "@/components/Footer";
+import { CMSProvider } from "@/lib/cms";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -79,9 +83,12 @@ function Home() {
   });
 
   return (
-    <PublicLayout>
-      <HomeBody stats={stats || { figure: 0, math: 0, latin: 0, general: 0 }} />
-    </PublicLayout>
+    <CMSProvider page="home">
+      <PublicLayout>
+        <HomeBody stats={stats || { figure: 0, math: 0, latin: 0, general: 0 }} />
+        <Footer />
+      </PublicLayout>
+    </CMSProvider>
   );
 }
 
@@ -97,8 +104,13 @@ function HomeBody({
 }) {
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:py-14 md:px-8 space-y-8">
+      <AdSlot placement={adsConfig.placements.TopBanner} />
+      
       <Hero />
       <LiveStats stats={stats} />
+      
+      <AdSlot placement={adsConfig.placements.ContentTop} />
+      
       <AboutDMAT />
       <Eligibility />
       <PracticeAppFeatures />
@@ -106,15 +118,16 @@ function HomeBody({
         <ExamPattern />
       </div>
       <Timeline />
+      
+      <AdSlot placement={adsConfig.placements.ContentMiddle} />
+      
       <RulesAndTypes />
       <Scoring />
       <PrepAndStrategies />
       <FAQ />
       <OfficialResources />
       
-      <footer className="mt-10 border-t pt-6 pb-10 text-xs text-muted-foreground text-center">
-        dMAT Practice Pro is an independent preparation platform. We are not affiliated with APS India, g.a.s.t., or the TestDaF Institute.
-      </footer>
+      <AdSlot placement={adsConfig.placements.ContentBottom} />
     </div>
   );
 }

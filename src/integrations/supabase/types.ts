@@ -425,6 +425,33 @@ export type Database = {
         };
         Relationships: [];
       };
+      site_content: {
+        Row: {
+          id: string;
+          page: string;
+          section: string;
+          key: string;
+          content: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          page: string;
+          section: string;
+          key: string;
+          content: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          page?: string;
+          section?: string;
+          key?: string;
+          content?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
       tab_switch_events: {
         Row: {
           attempt_id: string;

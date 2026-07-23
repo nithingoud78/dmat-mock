@@ -26,7 +26,8 @@ export function AdminLayout({ children }: { children: ReactNode }) {
 
   const items = [
     { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { to: "/admin/home", label: "Homepage Editor", icon: Home },
+    { to: "/admin/homepage", label: "Homepage Editor", icon: Home },
+    { to: "/admin/legal", label: "Legal Pages", icon: FileQuestion },
     { to: "/admin/questions", label: "Questions", icon: FileQuestion },
     { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
     { to: "/admin/feedback", label: "Feedback", icon: MessageSquare },

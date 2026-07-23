@@ -50,8 +50,8 @@ export const MODULES: Record<
     id: "general_academic",
     label: "General Academic",
     slug: "general-academic",
-    questions: 22,
-    displayQuestions: "Not publicly specified",
+    questions: 25,
+    displayQuestions: "~25 (estimated)",
     minutes: 90,
     icon: "📚",
     description:

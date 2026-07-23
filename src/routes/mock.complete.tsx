@@ -163,12 +163,13 @@ function CompleteMock() {
         // Core Module: use mock set question IDs
         const modBreakdown = mockSet.module_breakdown as Record<string, string[]>;
         const qIds = (modBreakdown[mid] || []).slice(0, mod.questions);
-        if (qIds.length > 0) {
+        if (qIds.length >= mod.questions) {
+          // Only use mock set if it has enough questions for this module
           const { data } = await supabase
             .from("questions")
             .select("*, source:sources(*)")
             .in("id", qIds);
-          if (data && data.length > 0) {
+          if (data && data.length >= mod.questions) {
             const idOrder = qIds;
             qs = (data as unknown as Question[]).sort(
               (a, b) => idOrder.indexOf(a.id) - idOrder.indexOf(b.id),
@@ -177,8 +178,8 @@ function CompleteMock() {
         }
       }
 
-      // Fallback: fetch random questions if mock set not available or GA module
-      if (qs.length === 0) {
+      // Fallback: fetch random questions if mock set not available, incomplete, or GA module
+      if (qs.length < mod.questions) {
         qs = await fetchQuestions(mid, { limit: mod.questions });
       }
 

@@ -16,6 +16,9 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Send, CheckCircle2 } from "lucide-react";
+import { AdSlot } from "@/components/ads/AdSlot";
+import { adsConfig } from "@/config/ads";
+import { Footer } from "@/components/Footer";
 
 export const Route = createFileRoute("/feedback")({
   head: () => ({
@@ -185,7 +188,10 @@ function FeedbackPage() {
             </CardContent>
           </Card>
         )}
+
+        <AdSlot placement={adsConfig.placements.ContentBottom} className="mt-12" />
       </div>
+      <Footer />
     </PublicLayout>
   );
 }

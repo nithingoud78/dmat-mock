@@ -57,7 +57,7 @@ export function PracticeModulePage({ moduleId }: { moduleId: ModuleId }) {
 
   const startSession = async (kind: "practice" | "timed") => {
     setMode("loading");
-    const qs = await fetchQuestions(moduleId, { difficulty, limit: mod.questions });
+    const qs = await fetchQuestions(moduleId, { difficulty, limit: kind === "practice" ? 1000 : mod.questions });
     if (qs.length === 0) {
       toast.error("No questions available for this filter.");
       setMode("landing");
@@ -114,20 +114,37 @@ export function PracticeModulePage({ moduleId }: { moduleId: ModuleId }) {
   };
 
   const finish = async (finalSection: SectionState) => {
+    let lastAnsweredIdx = -1;
+    finalSection.questions.forEach((q, idx) => {
+      if (finalSection.answers[q.id]) lastAnsweredIdx = Math.max(lastAnsweredIdx, idx);
+    });
+
+    let scoredQuestions = finalSection.questions;
+    if (mode === "practice") {
+      scoredQuestions = finalSection.questions.slice(
+        0,
+        Math.max(lastAnsweredIdx + 1, finalSection.currentIdx + 1),
+      );
+    }
+
     let correct = 0,
       incorrect = 0,
       skipped = 0;
-    for (const q of finalSection.questions) {
+    for (const q of scoredQuestions) {
       const a = finalSection.answers[q.id];
       if (!a) skipped++;
       else if (a === q.correct_option_id) correct++;
       else incorrect++;
     }
-    const total = finalSection.questions.length;
-    const score = Math.round((correct / Math.max(1, total)) * 200);
+    const total = scoredQuestions.length;
+    
+    // For review mode, we also want to truncate the section questions
+    const finalSectionToSave = { ...finalSection, questions: scoredQuestions };
+    // Individual mocks use raw score: 1 mark per correct answer
+    const score = correct;
     const accuracy = total ? +((correct / total) * 100).toFixed(2) : 0;
     const durationSec = finalSection.totalSeconds - Math.max(0, finalSection.secondsLeft);
-    setSection(finalSection);
+    setSection(finalSectionToSave);
     setFinished({ score, total, correct, incorrect, skipped });
 
     if (attemptId) {
@@ -145,16 +162,16 @@ export function PracticeModulePage({ moduleId }: { moduleId: ModuleId }) {
             duration_seconds: durationSec,
           })
           .eq("id", attemptId);
-        const rows = finalSection.questions.map((q) => ({
+        const rows = finalSectionToSave.questions.map((q) => ({
           attempt_id: attemptId,
           question_id: q.id,
-          selected_option_id: finalSection.answers[q.id] ?? null,
-          is_correct: finalSection.answers[q.id]
-            ? finalSection.answers[q.id] === q.correct_option_id
+          selected_option_id: finalSectionToSave.answers[q.id] ?? null,
+          is_correct: finalSectionToSave.answers[q.id]
+            ? finalSectionToSave.answers[q.id] === q.correct_option_id
             : null,
-          marked_for_review: !!finalSection.marked[q.id],
-          time_spent_seconds: finalSection.timePerQ[q.id] || 0,
-          answered_at: finalSection.answers[q.id] ? new Date().toISOString() : null,
+          marked_for_review: !!finalSectionToSave.marked[q.id],
+          time_spent_seconds: finalSectionToSave.timePerQ[q.id] || 0,
+          answered_at: finalSectionToSave.answers[q.id] ? new Date().toISOString() : null,
         }));
         await supabase.from("attempt_answers").insert(rows);
       } else {
@@ -223,8 +240,8 @@ export function PracticeModulePage({ moduleId }: { moduleId: ModuleId }) {
               {mod.label} — Result
             </div>
             <div className="mt-3 text-5xl font-bold text-primary">
-              {finished.score}
-              <span className="text-xl text-muted-foreground">/200</span>
+              {finished.correct}
+              <span className="text-xl text-muted-foreground">/{finished.total}</span>
             </div>
             <div className="mt-2 text-base text-muted-foreground">
               {finished.correct} correct · {finished.incorrect} incorrect · {finished.skipped}{" "}

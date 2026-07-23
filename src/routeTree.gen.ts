@@ -10,15 +10,22 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CookiePolicyRouteImport } from './routes/cookie-policy'
+import { Route as DisclaimerRouteImport } from './routes/disclaimer'
 import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as HistoryRouteImport } from './routes/history'
+import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
+import { Route as TermsAndConditionsRouteImport } from './routes/terms-and-conditions'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 import { Route as AdminDashboardRouteImport } from './routes/admin.dashboard'
 import { Route as AdminFeedbackRouteImport } from './routes/admin.feedback'
 import { Route as AdminHomeRouteImport } from './routes/admin.home'
+import { Route as AdminHomepageRouteImport } from './routes/admin.homepage'
+import { Route as AdminLegalRouteImport } from './routes/admin.legal'
 import { Route as AdminQuestionsRouteImport } from './routes/admin.questions'
 import { Route as MockCompleteRouteImport } from './routes/mock.complete'
 import { Route as MockSessionResultRouteImport } from './routes/mock.session-result'
@@ -34,6 +41,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -44,6 +56,16 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CookiePolicyRoute = CookiePolicyRouteImport.update({
+  id: '/cookie-policy',
+  path: '/cookie-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DisclaimerRoute = DisclaimerRouteImport.update({
+  id: '/disclaimer',
+  path: '/disclaimer',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FeedbackRoute = FeedbackRouteImport.update({
   id: '/feedback',
   path: '/feedback',
@@ -52,6 +74,16 @@ const FeedbackRoute = FeedbackRouteImport.update({
 const HistoryRoute = HistoryRouteImport.update({
   id: '/history',
   path: '/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
+  id: '/privacy-policy',
+  path: '/privacy-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsAndConditionsRoute = TermsAndConditionsRouteImport.update({
+  id: '/terms-and-conditions',
+  path: '/terms-and-conditions',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -77,6 +109,16 @@ const AdminFeedbackRoute = AdminFeedbackRouteImport.update({
 const AdminHomeRoute = AdminHomeRouteImport.update({
   id: '/home',
   path: '/home',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminHomepageRoute = AdminHomepageRouteImport.update({
+  id: '/homepage',
+  path: '/homepage',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLegalRoute = AdminLegalRouteImport.update({
+  id: '/legal',
+  path: '/legal',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminQuestionsRoute = AdminQuestionsRouteImport.update({
@@ -128,14 +170,21 @@ const MockResultAttemptIdRoute = MockResultAttemptIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
+  '/cookie-policy': typeof CookiePolicyRoute
+  '/disclaimer': typeof DisclaimerRoute
   '/feedback': typeof FeedbackRoute
   '/history': typeof HistoryRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
+  '/terms-and-conditions': typeof TermsAndConditionsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/feedback': typeof AdminFeedbackRoute
   '/admin/home': typeof AdminHomeRoute
+  '/admin/homepage': typeof AdminHomepageRoute
+  '/admin/legal': typeof AdminLegalRoute
   '/admin/questions': typeof AdminQuestionsRoute
   '/mock/complete': typeof MockCompleteRoute
   '/mock/session-result': typeof MockSessionResultRoute
@@ -149,13 +198,20 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
+  '/cookie-policy': typeof CookiePolicyRoute
+  '/disclaimer': typeof DisclaimerRoute
   '/feedback': typeof FeedbackRoute
   '/history': typeof HistoryRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
+  '/terms-and-conditions': typeof TermsAndConditionsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/feedback': typeof AdminFeedbackRoute
   '/admin/home': typeof AdminHomeRoute
+  '/admin/homepage': typeof AdminHomepageRoute
+  '/admin/legal': typeof AdminLegalRoute
   '/admin/questions': typeof AdminQuestionsRoute
   '/mock/complete': typeof MockCompleteRoute
   '/mock/session-result': typeof MockSessionResultRoute
@@ -170,14 +226,21 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
+  '/cookie-policy': typeof CookiePolicyRoute
+  '/disclaimer': typeof DisclaimerRoute
   '/feedback': typeof FeedbackRoute
   '/history': typeof HistoryRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
+  '/terms-and-conditions': typeof TermsAndConditionsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/feedback': typeof AdminFeedbackRoute
   '/admin/home': typeof AdminHomeRoute
+  '/admin/homepage': typeof AdminHomepageRoute
+  '/admin/legal': typeof AdminLegalRoute
   '/admin/questions': typeof AdminQuestionsRoute
   '/mock/complete': typeof MockCompleteRoute
   '/mock/session-result': typeof MockSessionResultRoute
@@ -193,14 +256,21 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
     | '/admin'
     | '/auth'
+    | '/cookie-policy'
+    | '/disclaimer'
     | '/feedback'
     | '/history'
+    | '/privacy-policy'
+    | '/terms-and-conditions'
     | '/admin/analytics'
     | '/admin/dashboard'
     | '/admin/feedback'
     | '/admin/home'
+    | '/admin/homepage'
+    | '/admin/legal'
     | '/admin/questions'
     | '/mock/complete'
     | '/mock/session-result'
@@ -214,13 +284,20 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/about'
     | '/auth'
+    | '/cookie-policy'
+    | '/disclaimer'
     | '/feedback'
     | '/history'
+    | '/privacy-policy'
+    | '/terms-and-conditions'
     | '/admin/analytics'
     | '/admin/dashboard'
     | '/admin/feedback'
     | '/admin/home'
+    | '/admin/homepage'
+    | '/admin/legal'
     | '/admin/questions'
     | '/mock/complete'
     | '/mock/session-result'
@@ -234,14 +311,21 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/about'
     | '/admin'
     | '/auth'
+    | '/cookie-policy'
+    | '/disclaimer'
     | '/feedback'
     | '/history'
+    | '/privacy-policy'
+    | '/terms-and-conditions'
     | '/admin/analytics'
     | '/admin/dashboard'
     | '/admin/feedback'
     | '/admin/home'
+    | '/admin/homepage'
+    | '/admin/legal'
     | '/admin/questions'
     | '/mock/complete'
     | '/mock/session-result'
@@ -256,10 +340,15 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
+  CookiePolicyRoute: typeof CookiePolicyRoute
+  DisclaimerRoute: typeof DisclaimerRoute
   FeedbackRoute: typeof FeedbackRoute
   HistoryRoute: typeof HistoryRoute
+  PrivacyPolicyRoute: typeof PrivacyPolicyRoute
+  TermsAndConditionsRoute: typeof TermsAndConditionsRoute
   MockCompleteRoute: typeof MockCompleteRoute
   MockSessionResultRoute: typeof MockSessionResultRoute
   PracticeCustomRoute: typeof PracticeCustomRoute
@@ -279,6 +368,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -293,6 +389,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cookie-policy': {
+      id: '/cookie-policy'
+      path: '/cookie-policy'
+      fullPath: '/cookie-policy'
+      preLoaderRoute: typeof CookiePolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/disclaimer': {
+      id: '/disclaimer'
+      path: '/disclaimer'
+      fullPath: '/disclaimer'
+      preLoaderRoute: typeof DisclaimerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/feedback': {
       id: '/feedback'
       path: '/feedback'
@@ -305,6 +415,20 @@ declare module '@tanstack/react-router' {
       path: '/history'
       fullPath: '/history'
       preLoaderRoute: typeof HistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy-policy': {
+      id: '/privacy-policy'
+      path: '/privacy-policy'
+      fullPath: '/privacy-policy'
+      preLoaderRoute: typeof PrivacyPolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms-and-conditions': {
+      id: '/terms-and-conditions'
+      path: '/terms-and-conditions'
+      fullPath: '/terms-and-conditions'
+      preLoaderRoute: typeof TermsAndConditionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -340,6 +464,20 @@ declare module '@tanstack/react-router' {
       path: '/home'
       fullPath: '/admin/home'
       preLoaderRoute: typeof AdminHomeRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/homepage': {
+      id: '/admin/homepage'
+      path: '/homepage'
+      fullPath: '/admin/homepage'
+      preLoaderRoute: typeof AdminHomepageRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/legal': {
+      id: '/admin/legal'
+      path: '/legal'
+      fullPath: '/admin/legal'
+      preLoaderRoute: typeof AdminLegalRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/questions': {
@@ -413,6 +551,8 @@ interface AdminRouteChildren {
   AdminDashboardRoute: typeof AdminDashboardRoute
   AdminFeedbackRoute: typeof AdminFeedbackRoute
   AdminHomeRoute: typeof AdminHomeRoute
+  AdminHomepageRoute: typeof AdminHomepageRoute
+  AdminLegalRoute: typeof AdminLegalRoute
   AdminQuestionsRoute: typeof AdminQuestionsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -422,6 +562,8 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminDashboardRoute: AdminDashboardRoute,
   AdminFeedbackRoute: AdminFeedbackRoute,
   AdminHomeRoute: AdminHomeRoute,
+  AdminHomepageRoute: AdminHomepageRoute,
+  AdminLegalRoute: AdminLegalRoute,
   AdminQuestionsRoute: AdminQuestionsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
@@ -430,10 +572,15 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
+  CookiePolicyRoute: CookiePolicyRoute,
+  DisclaimerRoute: DisclaimerRoute,
   FeedbackRoute: FeedbackRoute,
   HistoryRoute: HistoryRoute,
+  PrivacyPolicyRoute: PrivacyPolicyRoute,
+  TermsAndConditionsRoute: TermsAndConditionsRoute,
   MockCompleteRoute: MockCompleteRoute,
   MockSessionResultRoute: MockSessionResultRoute,
   PracticeCustomRoute: PracticeCustomRoute,

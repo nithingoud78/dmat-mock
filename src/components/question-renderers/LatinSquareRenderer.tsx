@@ -13,54 +13,59 @@ export interface LatinSquareData {
 // ── Grid Component ─────────────────────────────────────────────────────────
 interface LatinSquareGridProps {
   data: LatinSquareData;
-  revealAnswer?: string; // fill the ? cell with this on reveal
+  revealAnswer?: string;
   className?: string;
 }
 
 export function LatinSquareGrid({ data, revealAnswer, className }: LatinSquareGridProps) {
+  const size = data.size ?? data.grid?.length ?? 4;
+
   return (
     <div className={cn("overflow-x-auto", className)}>
-      <table
-        className="border-collapse"
+      <div
+        className="inline-grid gap-0 rounded-lg overflow-hidden border border-border shadow-sm"
+        style={{ gridTemplateColumns: `repeat(${size}, 52px)` }}
         role="grid"
         aria-label="Latin Square puzzle grid"
-        style={{ fontFamily: "'IBM Plex Mono', 'Courier New', monospace" }}
       >
-        <tbody>
-          {data.grid.map((row, rIdx) => (
-            <tr key={rIdx}>
-              {row.map((cell, cIdx) => {
-                const isTarget = rIdx === data.target_cell.row && cIdx === data.target_cell.col;
-                const displayCell = cell === "?" && revealAnswer ? revealAnswer : cell;
+        {(data.grid ?? []).map((row, rIdx) =>
+          row.map((cell, cIdx) => {
+            const isTarget =
+              rIdx === data.target_cell?.row && cIdx === data.target_cell?.col;
+            const displayCell =
+              cell === "?" && revealAnswer ? revealAnswer : cell;
+            const isEmpty = !displayCell && !isTarget;
 
-                return (
-                  <td
-                    key={cIdx}
-                    className={cn(
-                      "w-11 h-11 text-center text-base font-semibold select-none",
-                      "border-border",
-                      isTarget
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border bg-card text-foreground",
-                      !cell && !isTarget && "text-transparent",
-                    )}
-                    role="gridcell"
-                    aria-label={
-                      isTarget
-                        ? `Target cell: ${displayCell || "empty"}`
-                        : cell
-                          ? `${cell}`
-                          : "empty"
-                    }
-                  >
-                    {displayCell || ""}
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+            return (
+              <div
+                key={`${rIdx}-${cIdx}`}
+                role="gridcell"
+                aria-label={
+                  isTarget
+                    ? `Target cell: ${displayCell || "?"}`
+                    : cell
+                    ? `${cell}`
+                    : "empty"
+                }
+                className={cn(
+                  "flex items-center justify-center",
+                  "h-[52px] w-[52px]",
+                  "text-lg font-bold select-none font-mono",
+                  "border-r border-b border-border",
+                  rIdx === 0 && "border-t",
+                  cIdx === 0 && "border-l",
+                  isTarget
+                    ? "bg-primary/10 text-primary ring-2 ring-inset ring-primary/40"
+                    : "bg-card text-foreground",
+                  isEmpty && "opacity-0",
+                )}
+              >
+                {isTarget ? (displayCell || "?") : (displayCell || "")}
+              </div>
+            );
+          }),
+        )}
+      </div>
     </div>
   );
 }
@@ -71,17 +76,25 @@ interface LatinSquareRendererProps {
 }
 
 export const LatinSquareRenderer: FC<LatinSquareRendererProps> = memo(({ data }) => {
-  return (
-    <div className="space-y-5">
-      {/* Grid */}
-      <div>
-        <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Each symbol ({data.symbols.join(", ")}) appears exactly once per row and column
-        </p>
-        <LatinSquareGrid data={data} />
+  if (!data?.grid || !Array.isArray(data.grid)) {
+    return (
+      <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+        Latin Square data could not be rendered.
       </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        Each symbol ({(data.symbols ?? []).join(", ")}) appears exactly once per row and column.
+        Find the missing symbol for the highlighted cell ({"\u00a0?\u00a0"}).
+      </p>
+      <LatinSquareGrid data={data} />
     </div>
   );
 });
 
 LatinSquareRenderer.displayName = "LatinSquareRenderer";
+
+

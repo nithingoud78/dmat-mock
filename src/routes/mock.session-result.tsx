@@ -69,7 +69,7 @@ function SessionResultPage() {
 
         {/* Score summary */}
         <div className="mt-6 grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-          <BigStat label="Estimated Score" value={`${score}/400`} accent />
+          <BigStat label="Estimated Score" value={`${score}/200`} accent />
           <BigStat label="Estimated Percentile" value={`${totalPctl}th`} />
           <BigStat label="Accuracy" value={`${accuracy}%`} />
           <BigStat label="Time Used" value={formatMMSS(time)} />

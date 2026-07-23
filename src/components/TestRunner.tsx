@@ -34,6 +34,7 @@ import {
   LayoutGrid,
   XCircle,
   AlertTriangle,
+  ArrowLeft,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -70,6 +71,7 @@ export function TestRunner({
   const [showExplanation, setShowExplanation] = useState(false);
   const [confirmSubmit, setConfirmSubmit] = useState(false);
   const [tabWarn, setTabWarn] = useState(false);
+  const [confirmLeave, setConfirmLeave] = useState(false);
   const awaySinceRef = useRef<number | null>(null);
   const perQTickRef = useRef<number>(Date.now());
 
@@ -173,31 +175,80 @@ export function TestRunner({
     let a = 0,
       m = 0,
       s = 0;
-    for (const qq of section.questions) {
+
+    const limitIdx = isPractice ? section.currentIdx : section.questions.length - 1;
+
+    for (let i = 0; i < section.questions.length; i++) {
+      const qq = section.questions[i];
+      if (isPractice && i > limitIdx) break;
+
       if (section.answers[qq.id]) a++;
       else s++;
+      
       if (section.marked[qq.id]) m++;
     }
     return { answered: a, marked: m, skipped: s };
-  }, [section]);
+  }, [section, isPractice]);
 
   if (!q) return null;
 
-  // All questions now use the standard option grid below.
-  const useStandardOptions = true;
+  // Only show standard text options if the question does NOT already have
+  // visual options embedded in visual_data (e.g. FigureSequenceRenderer renders its own).
+  const hasVisualOptions =
+    Array.isArray((q.visual_data as any)?.options) &&
+    (q.visual_data as any).options.length > 0;
+  const useStandardOptions = !hasVisualOptions;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 md:px-8">
       {/* Header */}
+      {/* Back button + confirm dialog */}
+      <Dialog open={confirmLeave} onOpenChange={setConfirmLeave}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Leave this test?</DialogTitle>
+            <DialogDescription>
+              Your progress for this attempt may be lost.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              className="w-full sm:w-auto"
+              onClick={() => setConfirmLeave(false)}
+            >
+              Continue with test
+            </Button>
+            <Button
+              variant="destructive"
+              className="w-full sm:w-auto"
+              onClick={() => window.history.back()}
+            >
+              Take me back
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div className="min-w-0">
-          <div className="text-sm font-semibold text-foreground">{headerTitle}</div>
-          {headerSubtitle && <div className="text-xs text-muted-foreground">{headerSubtitle}</div>}
-          {typeof currentSectionIndex === "number" && totalSections && (
-            <div className="mt-1 text-xs text-muted-foreground">
-              Section {currentSectionIndex + 1} of {totalSections}
-            </div>
-          )}
+        <div className="flex items-center gap-3 min-w-0">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="shrink-0"
+            onClick={() => setConfirmLeave(true)}
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" /> Back
+          </Button>
+          <div className="min-w-0">
+            <div className="text-sm font-semibold text-foreground">{headerTitle}</div>
+            {headerSubtitle && <div className="text-xs text-muted-foreground">{headerSubtitle}</div>}
+            {typeof currentSectionIndex === "number" && totalSections && (
+              <div className="mt-1 text-xs text-muted-foreground">
+                Section {currentSectionIndex + 1} of {totalSections}
+              </div>
+            )}
+          </div>
         </div>
         {isTimed && (
           <div
@@ -221,8 +272,13 @@ export function TestRunner({
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
               <span>
                 Question{" "}
-                <span className="font-semibold text-foreground">{section.currentIdx + 1}</span> /{" "}
-                {section.questions.length}
+                <span className="font-semibold text-foreground">{section.currentIdx + 1}</span>
+                {!isPractice && (
+                  <>
+                    {" "}
+                    / {section.questions.length}
+                  </>
+                )}
               </span>
               <Badge variant="outline" className="capitalize">
                 {q.difficulty}
@@ -234,7 +290,14 @@ export function TestRunner({
           {/* Question content — visual or text */}
           <div className="flex flex-col justify-center">
             <QuestionErrorBoundary questionId={q.id} onSkip={() => go(section.currentIdx + 1)}>
-              <QuestionDisplay question={q} />
+              <QuestionDisplay 
+                question={q}
+                selectedOptionId={section.answers[q.id] || null}
+                correctOptionId={q.correct_option_id}
+                showFeedback={isPractice && showExplanation}
+                disabled={section.submitted}
+                onSelect={select}
+              />
             </QuestionErrorBoundary>
           </div>
 
@@ -374,7 +437,9 @@ export function TestRunner({
                   Next <ChevronRight className="ml-1 h-4 w-4" />
                 </Button>
               ) : (
-                <Button onClick={() => setConfirmSubmit(true)}>Submit</Button>
+                <Button onClick={() => setConfirmSubmit(true)}>
+                  {isPractice ? "Finish Practice" : "Submit"}
+                </Button>
               )}
             </div>
           </div>
@@ -416,40 +481,60 @@ export function TestRunner({
             </Card>
           )}
 
-          <QuestionPalette section={section} onJump={go} />
-          <div>
-            <Button variant="outline" className="w-full" onClick={() => setConfirmSubmit(true)}>
-              Submit section
-            </Button>
-          </div>
+          {!isPractice ? (
+            <>
+              <QuestionPalette section={section} onJump={go} />
+              <div>
+                <Button variant="outline" className="w-full" onClick={() => setConfirmSubmit(true)}>
+                  Submit section
+                </Button>
+              </div>
+            </>
+          ) : (
+            <Card className="p-4 shadow-card">
+              <div className="text-sm font-semibold mb-3">Practice Mode</div>
+              <div className="text-xs text-muted-foreground mb-4">
+                Unlimited practice mode. Keep answering questions until you're ready to stop.
+              </div>
+              <Button variant="default" className="w-full" onClick={() => setConfirmSubmit(true)}>
+                Finish Practice
+              </Button>
+            </Card>
+          )}
         </div>
 
         {/* Palette — mobile drawer */}
-        <div className="lg:hidden">
-          <Drawer>
-            <DrawerTrigger asChild>
-              <Button variant="outline" className="w-full">
-                <LayoutGrid className="mr-2 h-4 w-4" /> Question palette
-              </Button>
-            </DrawerTrigger>
-            <DrawerContent>
-              <DrawerHeader>
-                <DrawerTitle>Question palette</DrawerTitle>
-              </DrawerHeader>
-              <div className="px-4 pb-6">
-                <QuestionPalette section={section} onJump={go} />
-              </div>
-            </DrawerContent>
-          </Drawer>
-        </div>
+        {!isPractice && (
+          <div className="lg:hidden">
+            <Drawer>
+              <DrawerTrigger asChild>
+                <Button variant="outline" className="w-full">
+                  <LayoutGrid className="mr-2 h-4 w-4" /> Question palette
+                </Button>
+              </DrawerTrigger>
+              <DrawerContent>
+                <DrawerHeader>
+                  <DrawerTitle>Question palette</DrawerTitle>
+                </DrawerHeader>
+                <div className="px-4 pb-6">
+                  <QuestionPalette section={section} onJump={go} />
+                </div>
+              </DrawerContent>
+            </Drawer>
+          </div>
+        )}
       </div>
 
       {/* Submit confirm */}
       <Dialog open={confirmSubmit} onOpenChange={setConfirmSubmit}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Submit this section?</DialogTitle>
-            <DialogDescription>Review your progress before finalizing.</DialogDescription>
+            <DialogTitle>{isPractice ? "Finish Practice?" : "Submit this section?"}</DialogTitle>
+            <DialogDescription>
+              {isPractice
+                ? "You can review your results for the questions you've attempted."
+                : "Review your progress before finalizing."}
+            </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-3 gap-3 text-center">
             <Stat label="Answered" value={counts.answered} />
@@ -466,7 +551,7 @@ export function TestRunner({
                 submit();
               }}
             >
-              Submit now
+              {isPractice ? "Finish now" : "Submit now"}
             </Button>
           </DialogFooter>
         </DialogContent>
