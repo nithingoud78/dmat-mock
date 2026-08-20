@@ -29,7 +29,7 @@ export function PracticeAppFeatures() {
             </div>
             <h3 className="font-semibold">Targeted Practice & Adaptive Difficulty</h3>
             <p className="text-sm text-muted-foreground">
-              Drill specific modules continuously. Start with easy procedural patterns and dynamically scale to high-difficulty x+1 multi-rule matrices as your accuracy improves.
+              Drill specific modules continuously. Start with easy patterns and dynamically scale to high-difficulty x+1 multi-rule matrices as your accuracy improves.
             </p>
           </div>
           <div className="p-6 space-y-3">

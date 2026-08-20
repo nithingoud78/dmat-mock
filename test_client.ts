@@ -1,0 +1,1 @@
+import { createClient } from "@supabase/supabase-js"; const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY); async function run() { const { count, error } = await supabase.from("questions").select("*", { count: "exact", head: true }); console.log("COUNT:", count, "ERROR:", error); } run().catch(console.error);

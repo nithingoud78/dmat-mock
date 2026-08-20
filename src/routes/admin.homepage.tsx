@@ -19,7 +19,7 @@ function AdminHomepageWrapper() {
 const HERO_FIELDS: CMSField[] = [
   { key: "badge", label: "Badge Text", type: "text", defaultValue: "Built for the 2026 dMAT format" },
   { key: "title_1", label: "Title Part 1", type: "text", defaultValue: "Master the dMAT. Secure your APS." },
-  { key: "subtitle", label: "Subtitle", type: "textarea", defaultValue: "The definitive preparation platform for the Digital Master Assessment Test (dMAT). Practice with mathematically accurate procedural generations of the official g.a.s.t. question formats." },
+  { key: "subtitle", label: "Subtitle", type: "textarea", defaultValue: "The definitive preparation platform for the Digital Master Assessment Test (dMAT). Practice with officially-aligned g.a.s.t. question formats." },
   { key: "primary_btn", label: "Primary Button", type: "text", defaultValue: "Start Complete Mock" },
   { key: "secondary_btn", label: "Secondary Button", type: "text", defaultValue: "Practice by Section" },
 ];
@@ -33,7 +33,7 @@ function AdminHomepage() {
   const heroData = {
     badge: getHero("badge", "Built for the 2026 dMAT format"),
     title_1: getHero("title_1", "Master the dMAT. Secure your APS."),
-    subtitle: getHero("subtitle", "The definitive preparation platform for the Digital Master Assessment Test (dMAT). Practice with mathematically accurate procedural generations of the official g.a.s.t. question formats."),
+    subtitle: getHero("subtitle", "The definitive preparation platform for the Digital Master Assessment Test (dMAT). Practice with officially-aligned g.a.s.t. question formats."),
     primary_btn: getHero("primary_btn", "Start Complete Mock"),
     secondary_btn: getHero("secondary_btn", "Practice by Section"),
   };

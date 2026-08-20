@@ -25,7 +25,7 @@ export const LEGAL_DEFAULTS: Record<string, string> = {
 </ul>
 
 <h2>How We Build Questions</h2>
-<p>Our practice questions are built through a combination of algorithmic procedural generation and manual crafting by subject-matter experts. Each question is reviewed for technical accuracy, logical validity, and alignment with the official dMAT format described in publicly available preparatory materials from g.a.s.t.</p>
+<p>Our practice questions are built through careful curation and manual crafting by subject-matter experts. Each question is reviewed for technical accuracy, logical validity, and alignment with the official dMAT format described in publicly available preparatory materials from g.a.s.t.</p>
 <p>Questions are tagged with difficulty, subtopic, estimated solving time, and explanations. We never copy or reproduce official examination content.</p>
 
 <h2>Independent Platform</h2>

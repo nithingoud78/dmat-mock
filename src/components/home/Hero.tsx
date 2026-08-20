@@ -17,7 +17,7 @@ export function Hero() {
       </h1>
       
       <p className="mt-4 max-w-2xl text-base text-muted-foreground sm:text-lg">
-        {get("subtitle", "The definitive preparation platform for the Digital Master Assessment Test (dMAT). Practice with mathematically accurate procedural generations of the official g.a.s.t. question formats.")}
+        {get("subtitle", "The definitive preparation platform for the Digital Master Assessment Test (dMAT). Practice with officially-aligned g.a.s.t. question formats.")}
       </p>
       
       <div className="mt-8 flex flex-wrap gap-3">

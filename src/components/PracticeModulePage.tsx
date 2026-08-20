@@ -21,7 +21,8 @@ import { useAuth } from "@/lib/auth";
 import { getOrCreateSessionToken } from "@/lib/session";
 import { ExamLayout } from "@/components/ExamLayout";
 import { toast } from "sonner";
-import { CheckCircle2, Clock, ListChecks, Play, Timer, XCircle, EyeOff, RotateCcw } from "lucide-react";
+import { AlertTriangle, CheckCircle2, RotateCcw, XCircle, Settings2, Play, Eye, Clock, ListChecks, Timer, EyeOff } from "lucide-react";
+import { ReviewQuestionDialog } from "./ReviewQuestionDialog";
 
 type Difficulty = "easy" | "medium" | "hard" | "all";
 
@@ -294,25 +295,41 @@ export function PracticeModulePage({ moduleId }: { moduleId: ModuleId }) {
                     <div className="mb-3 whitespace-pre-wrap text-sm text-foreground">
                       {q.prompt_text}
                     </div>
-                    <div className="grid gap-1 text-xs">
-                      <div>
-                        Your answer:{" "}
-                        <span
-                          className={
-                            ok ? "text-success" : a ? "text-destructive" : "text-muted-foreground"
-                          }
+
+                    {q.visual_data ? (
+                      <div className="mt-4">
+                        <ReviewQuestionDialog 
+                          question={q} 
+                          userAnswer={a ?? null}
                         >
-                          {a ? (q.options.find((o) => o.id === a)?.text ?? a) : "Skipped"}
-                        </span>
+                          <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                            <Eye className="mr-2 h-4 w-4" />
+                            Review Visual Question
+                          </Button>
+                        </ReviewQuestionDialog>
                       </div>
-                      <div>
-                        Correct:{" "}
-                        <span className="text-success">
-                          {q.options.find((o) => o.id === q.correct_option_id)?.text}
-                        </span>
+                    ) : (
+                      <div className="grid gap-1 text-xs">
+                        <div>
+                          Your answer:{" "}
+                          <span
+                            className={
+                              ok ? "text-success" : a ? "text-destructive" : "text-muted-foreground"
+                            }
+                          >
+                            {a ? (q.options.find((o) => o.id === a)?.text ?? a) : "Skipped"}
+                          </span>
+                        </div>
+                        <div>
+                          Correct:{" "}
+                          <span className="text-success">
+                            {q.options.find((o) => o.id === q.correct_option_id)?.text}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    {q.explanation_text && (
+                    )}
+
+                    {!q.visual_data && q.explanation_text && (
                       <div className="mt-3 rounded-lg bg-secondary/50 p-3 text-xs text-muted-foreground">
                         {q.explanation_text}
                       </div>

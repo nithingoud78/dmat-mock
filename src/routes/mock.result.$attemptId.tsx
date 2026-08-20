@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { MODULES } from "@/lib/modules";
 import { SourcePopover } from "@/components/SourcePopover";
 import { formatMMSS } from "@/lib/time";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle, Eye } from "lucide-react";
+import { ReviewQuestionDialog } from "@/components/ReviewQuestionDialog";
 
 export const Route = createFileRoute("/mock/result/$attemptId")({
   head: () => ({
@@ -157,32 +158,48 @@ function ResultPage() {
                           <SourcePopover source={q.source} />
                         </div>
                         <div className="mb-2 whitespace-pre-wrap text-sm">{q.prompt_text}</div>
-                        <div className="grid gap-1 text-xs">
-                          <div>
-                            Your answer:{" "}
-                            <span
-                              className={
-                                ok
-                                  ? "text-success"
-                                  : r.selected_option_id
-                                    ? "text-destructive"
-                                    : "text-muted-foreground"
-                              }
+
+                        {q.visual_data ? (
+                          <div className="mt-4">
+                            <ReviewQuestionDialog 
+                              question={q} 
+                              userAnswer={r.selected_option_id ?? null}
                             >
-                              {r.selected_option_id
-                                ? (q.options.find((o: any) => o.id === r.selected_option_id)
-                                    ?.text ?? r.selected_option_id)
-                                : "Skipped"}
-                            </span>
+                              <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                                <Eye className="mr-2 h-4 w-4" />
+                                Review Visual Question
+                              </Button>
+                            </ReviewQuestionDialog>
                           </div>
-                          <div>
-                            Correct:{" "}
-                            <span className="text-success">
-                              {q.options.find((o: any) => o.id === q.correct_option_id)?.text}
-                            </span>
+                        ) : (
+                          <div className="grid gap-1 text-xs">
+                            <div>
+                              Your answer:{" "}
+                              <span
+                                className={
+                                  ok
+                                    ? "text-success"
+                                    : r.selected_option_id
+                                      ? "text-destructive"
+                                      : "text-muted-foreground"
+                                }
+                              >
+                                {r.selected_option_id
+                                  ? (q.options.find((o: any) => o.id === r.selected_option_id)
+                                      ?.text ?? r.selected_option_id)
+                                  : "Skipped"}
+                              </span>
+                            </div>
+                            <div>
+                              Correct:{" "}
+                              <span className="text-success">
+                                {q.options.find((o: any) => o.id === q.correct_option_id)?.text}
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                        {q.explanation_text && (
+                        )}
+
+                        {!q.visual_data && q.explanation_text && (
                           <div className="mt-3 rounded-lg bg-secondary/50 p-3 text-xs text-muted-foreground">
                             {q.explanation_text}
                           </div>
