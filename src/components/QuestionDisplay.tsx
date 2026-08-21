@@ -119,7 +119,10 @@ export const QuestionDisplay: FC<QuestionDisplayProps> = memo(({
           <p className="mb-4 text-base leading-relaxed text-foreground">{question.prompt_text}</p>
         )}
         <FigureSequenceRenderer 
-          data={vd as unknown as FigureSequenceData} 
+          data={{
+            ...(vd as unknown as FigureSequenceData),
+            options: question.options as any
+          }} 
           selectedOptionId={selectedOptionId}
           correctOptionId={correctOptionId}
           showFeedback={showFeedback}

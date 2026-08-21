@@ -195,8 +195,8 @@ export function TestRunner({
   // Only show standard text options if the question does NOT already have
   // visual options embedded in visual_data (e.g. FigureSequenceRenderer renders its own).
   const hasVisualOptions =
-    Array.isArray((q.visual_data as any)?.options) &&
-    (q.visual_data as any).options.length > 0;
+    (Array.isArray((q.visual_data as any)?.options) && (q.visual_data as any).options.length > 0) ||
+    (q.module === "figure_sequence" && q.options.length > 0 && "objects" in (q.options[0] as any));
   const useStandardOptions = !hasVisualOptions;
 
   return (
