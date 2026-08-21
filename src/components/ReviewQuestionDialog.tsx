@@ -1,5 +1,5 @@
 import { type FC } from "react";
-import { Question } from "@/lib/types";
+import { Question } from "@/lib/test-types";
 import { QuestionDisplay } from "./QuestionDisplay";
 import {
   Dialog,
