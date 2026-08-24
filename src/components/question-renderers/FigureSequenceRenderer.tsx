@@ -20,9 +20,11 @@ export interface FigureSequenceData {
   type: "figure_sequence";
   grid_size?: number; // default 4
   frames: FigureFrame[];
+  blank_count?: number; // How many "?" placeholders to show (default 1)
   options?: Array<{
     id: string;
-    objects: FigureObject[];
+    objects?: FigureObject[];
+    frames?: FigureFrame[]; // Support multi-frame options
   }>;
 }
 
@@ -165,6 +167,7 @@ interface SequenceProps {
   cellSize?: number;
   /** If true, last frame shows a "?" placeholder */
   showQuestion?: boolean;
+  blankCount?: number;
 }
 
 export function FigureSequenceStrip({
@@ -172,6 +175,7 @@ export function FigureSequenceStrip({
   gridSize = DEFAULT_GRID,
   cellSize = CELL_SIZE,
   showQuestion = true,
+  blankCount = 1,
 }: SequenceProps) {
   const total = gridSize * cellSize;
   return (
@@ -179,18 +183,15 @@ export function FigureSequenceStrip({
       {frames.map((frame, i) => (
         <div key={i} className="flex items-center gap-3">
           <FigureGrid frame={frame} gridSize={gridSize} cellSize={cellSize} />
-          {i < frames.length - 1 && (
+          {(i < frames.length - 1 || showQuestion) && (
             <span className="text-lg text-[#6B7280]" aria-hidden="true">
               →
             </span>
           )}
         </div>
       ))}
-      {showQuestion && (
-        <div className="flex items-center gap-3">
-          <span className="text-lg text-[#6B7280]" aria-hidden="true">
-            →
-          </span>
+      {showQuestion && Array.from({ length: blankCount }).map((_, i) => (
+        <div key={`blank-${i}`} className="flex items-center gap-3">
           <svg
             width={total}
             height={total}
@@ -198,21 +199,21 @@ export function FigureSequenceStrip({
             className="rounded border border-dashed border-[#5F73FF] bg-[#EEF2FF]"
             aria-label="Question frame"
           >
-            {Array.from({ length: gridSize + 1 }, (_, i) => (
-              <g key={`ql-${i}`}>
+            {Array.from({ length: gridSize + 1 }, (_, j) => (
+              <g key={`ql-${j}`}>
                 <line
-                  x1={i * cellSize}
+                  x1={j * cellSize}
                   y1={0}
-                  x2={i * cellSize}
+                  x2={j * cellSize}
                   y2={total}
                   stroke="#C7D2FE"
                   strokeWidth={1}
                 />
                 <line
                   x1={0}
-                  y1={i * cellSize}
+                  y1={j * cellSize}
                   x2={total}
-                  y2={i * cellSize}
+                  y2={j * cellSize}
                   stroke="#C7D2FE"
                   strokeWidth={1}
                 />
@@ -230,8 +231,13 @@ export function FigureSequenceStrip({
               ?
             </text>
           </svg>
+          {i < blankCount - 1 && (
+            <span className="text-lg text-[#6B7280]" aria-hidden="true">
+              →
+            </span>
+          )}
         </div>
-      )}
+      ))}
     </div>
   );
 }
@@ -239,7 +245,8 @@ export function FigureSequenceStrip({
 // ── Option Grid ────────────────────────────────────────────────────────────
 interface OptionGridProps {
   optionId: string;
-  objects: FigureObject[];
+  objects?: FigureObject[];
+  frames?: FigureFrame[];
   gridSize?: number;
   cellSize?: number;
   selected?: boolean;
@@ -252,6 +259,7 @@ interface OptionGridProps {
 export function OptionGrid({
   optionId,
   objects,
+  frames,
   gridSize = DEFAULT_GRID,
   cellSize = CELL_SIZE,
   selected,
@@ -278,7 +286,20 @@ export function OptionGrid({
       aria-pressed={selected}
       aria-label={`Option ${optionId.toUpperCase()}`}
     >
-      <FigureGrid frame={{ objects }} gridSize={gridSize} cellSize={cellSize} />
+      <div className="flex items-center gap-2">
+        {frames && frames.length > 0 ? (
+          frames.map((frame, idx) => (
+            <div key={idx} className="flex items-center gap-2">
+              <FigureGrid frame={frame} gridSize={gridSize} cellSize={cellSize} />
+              {idx < frames.length - 1 && (
+                <span className="text-sm text-[#6B7280]">→</span>
+              )}
+            </div>
+          ))
+        ) : (
+          objects && <FigureGrid frame={{ objects }} gridSize={gridSize} cellSize={cellSize} />
+        )}
+      </div>
       <span
         className={cn(
           "text-xs font-semibold",
@@ -328,6 +349,7 @@ export const FigureSequenceRenderer: FC<FigureSequenceRendererProps> = memo(
             gridSize={gridSize}
             cellSize={cellSize}
             showQuestion={true}
+            blankCount={data.blank_count}
           />
         </div>
 
@@ -335,7 +357,7 @@ export const FigureSequenceRenderer: FC<FigureSequenceRendererProps> = memo(
         {data.options && data.options.length > 0 && (
           <div>
             <p className="mb-3 text-xs font-medium uppercase tracking-wide text-[#6B7280]">
-              Choose the next figure
+              Choose the next figure{data.blank_count && data.blank_count > 1 ? "s" : ""}
             </p>
             <div className="flex flex-wrap gap-3">
               {data.options.map((opt) => {
@@ -347,6 +369,7 @@ export const FigureSequenceRenderer: FC<FigureSequenceRendererProps> = memo(
                     key={opt.id}
                     optionId={opt.id}
                     objects={opt.objects}
+                    frames={opt.frames}
                     gridSize={gridSize}
                     cellSize={cellSize}
                     selected={isSelected}

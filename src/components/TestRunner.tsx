@@ -196,8 +196,10 @@ export function TestRunner({
   // visual options embedded in visual_data (e.g. FigureSequenceRenderer renders its own).
   const hasVisualOptions =
     (Array.isArray((q.visual_data as any)?.options) && (q.visual_data as any).options.length > 0) ||
-    (q.module === "figure_sequence" && q.options.length > 0 && "objects" in (q.options[0] as any));
-  const useStandardOptions = !hasVisualOptions;
+    (q.module === "figure_sequence" && q.options.length > 0 && ("objects" in (q.options[0] as any) || "frames" in (q.options[0] as any)));
+  const validStandardOptions = q.options.filter((opt: any) => opt && typeof opt.id === 'string');
+  const useStandardOptions = !hasVisualOptions && validStandardOptions.length > 0;
+  const isSolutionOnly = !hasVisualOptions && q.options.length > 0 && validStandardOptions.length === 0;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 md:px-8">
@@ -301,8 +303,23 @@ export function TestRunner({
             </QuestionErrorBoundary>
           </div>
 
+          {/* Non-standard single solution (for math equations that lack distractors) */}
+          {isSolutionOnly && (
+            <div className="mt-6 flex justify-center">
+              <Button
+                variant={section.answers[q.id] === q.correct_option_id ? "secondary" : "default"}
+                size="lg"
+                className="w-full sm:w-auto"
+                onClick={() => select(q.correct_option_id)}
+                disabled={section.submitted || section.answers[q.id] === q.correct_option_id}
+              >
+                {section.answers[q.id] === q.correct_option_id ? "Solution Revealed" : "Reveal Solution"}
+              </Button>
+            </div>
+          )}
+
           {/* Standard option buttons (for plain text / math with no visual_data) */}
-          {useStandardOptions && q.options.length > 0 && (
+          {useStandardOptions && (
             <div className="mt-6 grid gap-2.5 sm:grid-cols-2">
               {q.options.map((opt) => {
                 const selected = section.answers[q.id] === opt.id;
