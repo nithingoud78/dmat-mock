@@ -1,12 +1,26 @@
 import { useEffect, useRef } from "react";
+import { useLocation } from "@tanstack/react-router";
 import { adsConfig } from "@/config/ads";
 
 export function MonetagIntegration() {
   const initialized = useRef(false);
+  const location = useLocation();
 
   useEffect(() => {
-    // Only run if Monetag is enabled and the component is running on the client
-    if (!adsConfig.adsEnabled || !adsConfig.monetagEnabled || typeof window === "undefined" || initialized.current) {
+    // Determine if this route transitions into an exam session without a full page reload.
+    // If it does, we MUST NOT initialize Monetag because its global OnClick/Popunder 
+    // event handlers will persist and fire during the active exam, which is strictly forbidden.
+    const path = location.pathname;
+    const isExamTransitionRoute = path.startsWith('/practice/') || path.startsWith('/mock/complete');
+
+    // Only run if Monetag is enabled, running on the client, and we are NOT on an exam-transition route
+    if (
+      !adsConfig.adsEnabled || 
+      !adsConfig.monetagEnabled || 
+      typeof window === "undefined" || 
+      initialized.current ||
+      isExamTransitionRoute
+    ) {
       return;
     }
 
@@ -97,7 +111,7 @@ export function MonetagIntegration() {
         console.error("Error during Monetag cleanup:", e);
       }
     };
-  }, []);
+  }, [location.pathname]);
 
   return null;
 }
