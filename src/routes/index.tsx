@@ -15,8 +15,6 @@ import { Scoring } from "@/components/home/Scoring";
 import { PrepAndStrategies } from "@/components/home/PrepAndStrategies";
 import { FAQ } from "@/components/home/FAQ";
 import { OfficialResources } from "@/components/home/OfficialResources";
-import { AdSlot } from "@/components/ads/AdSlot";
-import { adsConfig } from "@/config/ads";
 import { Footer } from "@/components/Footer";
 import { CMSProvider } from "@/lib/cms";
 
@@ -104,13 +102,8 @@ function HomeBody({
 }) {
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:py-14 md:px-8 space-y-8">
-      <AdSlot placement={adsConfig.placements.TopBanner} />
-      
       <Hero />
       <LiveStats stats={stats} />
-      
-      <AdSlot placement={adsConfig.placements.ContentTop} />
-      
       <AboutDMAT />
       <Eligibility />
       <PracticeAppFeatures />
@@ -118,16 +111,11 @@ function HomeBody({
         <ExamPattern />
       </div>
       <Timeline />
-      
-      <AdSlot placement={adsConfig.placements.ContentMiddle} />
-      
       <RulesAndTypes />
       <Scoring />
       <PrepAndStrategies />
       <FAQ />
       <OfficialResources />
-      
-      <AdSlot placement={adsConfig.placements.ContentBottom} />
     </div>
   );
 }

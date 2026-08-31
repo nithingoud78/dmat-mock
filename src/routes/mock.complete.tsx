@@ -491,6 +491,9 @@ function CompleteMock() {
               <Play className="mr-2 h-4 w-4" /> Begin Mock Test
             </Button>
           </Card>
+          <div className="mt-8 text-center text-xs text-muted-foreground">
+            Ads are not displayed while you are taking a test.
+          </div>
         </div>
       </PublicLayout>
     );

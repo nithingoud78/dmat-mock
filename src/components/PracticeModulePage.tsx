@@ -390,6 +390,9 @@ export function PracticeModulePage({ moduleId }: { moduleId: ModuleId }) {
               No sign-in required. Both practice modes work anonymously.
             </p>
         </Card>
+        <div className="mt-8 text-center text-xs text-muted-foreground">
+          Ads are not displayed while you are taking a test.
+        </div>
       </div>
     </PublicLayout>
   );

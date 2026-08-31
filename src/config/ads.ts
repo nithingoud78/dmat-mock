@@ -1,6 +1,9 @@
 export const adsConfig = {
   // Master switch for all ad placements (set to true to enable placeholders)
-  adsEnabled: false,
+  adsEnabled: true,
+  
+  // Monetag integration (Vignette Banner / In-Page Push)
+  monetagEnabled: true,
   
   // Switch to true ONLY after Google AdSense approves the domain
   adsenseEnabled: false,

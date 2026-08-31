@@ -1,4 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { MonetagIntegration } from "@/components/ads/MonetagIntegration";
 import {
   Home,
   PuzzleIcon,
@@ -116,6 +117,8 @@ function AppSidebar() {
   );
 }
 
+
+
 export function PublicLayout({ children }: { children: ReactNode }) {
   return (
     <SidebarProvider>
@@ -143,13 +146,16 @@ export function PublicLayout({ children }: { children: ReactNode }) {
               </a>
             </div>
           </header>
-          <main className="flex-1">{children}</main>
+          <main className="flex-1">
+            {children}
+          </main>
           <footer className="border-t px-6 py-4 text-xs text-muted-foreground">
             dMAT Practice Pro is an independent personal-use tool. Not affiliated with g.a.s.t. or
             APS.
           </footer>
         </div>
       </div>
+      <MonetagIntegration />
     </SidebarProvider>
   );
 }
