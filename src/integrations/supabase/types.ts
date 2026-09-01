@@ -452,6 +452,27 @@ export type Database = {
         };
         Relationships: [];
       };
+      site_settings: {
+        Row: {
+          id: string;
+          ads_enabled: boolean;
+          ads_disabled_at: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          ads_enabled?: boolean;
+          ads_disabled_at?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          ads_enabled?: boolean;
+          ads_disabled_at?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       tab_switch_events: {
         Row: {
           attempt_id: string;
@@ -594,6 +615,15 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      get_effective_site_settings: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          id: string;
+          ads_enabled: boolean;
+          ads_disabled_at: string | null;
+          updated_at: string;
+        }[];
+      };
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"];

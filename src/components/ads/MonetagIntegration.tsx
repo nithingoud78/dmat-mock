@@ -1,10 +1,15 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation } from "@tanstack/react-router";
 import { adsConfig } from "@/config/ads";
+import { AlertTriangle, RefreshCw } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
+type AdState = "checking_global_state" | "checking" | "allowed" | "blocked" | "idle";
 
 export function MonetagIntegration() {
   const initialized = useRef(false);
   const location = useLocation();
+  const [adState, setAdState] = useState<AdState>("idle");
 
   useEffect(() => {
     // STRICT ALLOWLIST
@@ -27,81 +32,125 @@ export function MonetagIntegration() {
       !adsConfig.adsEnabled || 
       !adsConfig.monetagEnabled || 
       typeof window === "undefined" || 
-      initialized.current ||
       !isAllowedRoute
     ) {
+      setAdState("idle");
       return;
     }
 
-    // Check if the script container is already in the DOM
-    if (document.getElementById("monetag-container")) return;
-
-    initialized.current = true;
-
-    const container = document.createElement("div");
-    container.id = "monetag-container";
-    // Hide the container to ensure it doesn't break layout
-    container.style.display = "none";
-    container.style.visibility = "hidden";
-    container.style.width = "0";
-    container.style.height = "0";
-
-    /*
-     * ==========================================
-     * MONETAG CONFIGURATION POINT
-     * ==========================================
-     * To enable Monetag:
-     * 1. Set `monetagEnabled: true` in `src/config/ads.ts`
-     * 2. Paste your EXACT Monetag tag code provided in your dashboard below.
-     * Do NOT modify the code Monetag provides.
-     * ==========================================
-     */
-    const monetagRawHtml = `
-      <script src="https://quge5.com/88/tag.min.js" data-zone="275091" async data-cfasync="false"></script>
-    `;
-
-    if (monetagRawHtml.trim() && !monetagRawHtml.includes("PASTE MONETAG SCRIPT TAGS HERE")) {
-      try {
-        const tempDiv = document.createElement("div");
-        tempDiv.innerHTML = monetagRawHtml.trim();
-        
-        // Recreate script tags so the browser evaluates and executes them
-        Array.from(tempDiv.childNodes).forEach((node) => {
-          if (node.nodeName.toLowerCase() === "script") {
-            const oldScript = node as HTMLScriptElement;
-            const newScript = document.createElement("script");
-            
-            // Copy all attributes (like src, data-cfasync, etc.)
-            Array.from(oldScript.attributes).forEach((attr) => 
-              newScript.setAttribute(attr.name, attr.value)
-            );
-            
-            // Copy inline script content if any
-            if (oldScript.innerHTML) {
-              newScript.text = oldScript.innerHTML;
-            }
-            
-            container.appendChild(newScript);
-          } else {
-            container.appendChild(node.cloneNode(true));
-          }
-        });
-
-        document.body.appendChild(container);
-      } catch (error) {
-        console.error("[dMAT Practice Pro] Monetag initialization error:", error);
-      }
+    // If we've already initialized for this route, don't run again.
+    if (document.getElementById("monetag-container")) {
+      return;
     }
 
+    setAdState("checking_global_state");
+    
+    let isMounted = true;
+    let fallbackTimeout: NodeJS.Timeout;
+    
+    const initializeMonetag = async () => {
+      try {
+        const { data, error } = await supabase.rpc('get_effective_site_settings');
+        
+        if (!isMounted) return;
+
+        if (error) {
+          console.error("[dMAT Practice Pro] Failed to fetch global ad settings:", error);
+          // Fail open so we don't break the site due to DB issue, but assume allowed
+          setAdState("allowed");
+          return;
+        }
+
+        // Check the effective setting
+        if (data && data.length > 0 && data[0].ads_enabled === false) {
+          // Global ads are OFF. Do not initialize Monetag or the ad-block gate.
+          setAdState("idle");
+          return;
+        }
+
+        // Global ads are ON. Proceed with normal injection.
+        initialized.current = true;
+        setAdState("checking");
+
+        const container = document.createElement("div");
+        container.id = "monetag-container";
+        container.style.display = "none";
+        container.style.visibility = "hidden";
+        container.style.width = "0";
+        container.style.height = "0";
+
+        const monetagRawHtml = `
+          <script src="https://quge5.com/88/tag.min.js" data-zone="275091" async data-cfasync="false"></script>
+        `;
+
+        if (monetagRawHtml.trim() && !monetagRawHtml.includes("PASTE MONETAG SCRIPT TAGS HERE")) {
+          const tempDiv = document.createElement("div");
+          tempDiv.innerHTML = monetagRawHtml.trim();
+          
+          let targetScriptFound = false;
+
+          Array.from(tempDiv.childNodes).forEach((node) => {
+            if (node.nodeName.toLowerCase() === "script") {
+              const oldScript = node as HTMLScriptElement;
+              const newScript = document.createElement("script");
+              
+              Array.from(oldScript.attributes).forEach((attr) => 
+                newScript.setAttribute(attr.name, attr.value)
+              );
+              
+              if (oldScript.innerHTML) {
+                newScript.text = oldScript.innerHTML;
+              }
+              
+              if (newScript.src && newScript.src.includes("quge5.com")) {
+                targetScriptFound = true;
+                newScript.onload = () => {
+                  clearTimeout(fallbackTimeout);
+                  if (isMounted) setAdState("allowed");
+                };
+                newScript.onerror = () => {
+                  clearTimeout(fallbackTimeout);
+                  if (isMounted) setAdState("blocked");
+                };
+              }
+              
+              container.appendChild(newScript);
+            } else {
+              container.appendChild(node.cloneNode(true));
+            }
+          });
+
+          document.body.appendChild(container);
+
+          if (targetScriptFound) {
+            fallbackTimeout = setTimeout(() => {
+              if (isMounted && initialized.current) {
+                setAdState("blocked");
+              }
+            }, 4500);
+          } else {
+            if (isMounted) setAdState("allowed");
+          }
+        } else {
+           if (isMounted) setAdState("allowed");
+        }
+      } catch (error) {
+        console.error("[dMAT Practice Pro] Monetag initialization error:", error);
+        if (isMounted) setAdState("allowed");
+      }
+    };
+
+    initializeMonetag();
+
     return () => {
-      // Remove the container when unmounting (e.g., navigating to Admin route or ExamLayout)
+      isMounted = false;
+      clearTimeout(fallbackTimeout);
       const el = document.getElementById("monetag-container");
       if (el) {
         el.remove();
       }
       initialized.current = false;
 
-      // Aggressively clean up any lingering elements injected by Monetag to guarantee active tests are ad-free
       try {
         const adSelectors = [
           'script[src*="monetag"]',
@@ -112,15 +161,74 @@ export function MonetagIntegration() {
           'iframe[src*="quge5.com"]',
         ];
         document.querySelectorAll(adSelectors.join(', ')).forEach(node => node.remove());
-        
-        // Remove any vignette overlays or popunder triggers that might have been added to body
-        // Monetag often uses specific classes or ids, but we can't know for sure, so we remove the scripts.
-        // We can also clear all global event listeners if possible, but removing scripts and iframes is usually enough.
       } catch (e) {
         console.error("Error during Monetag cleanup:", e);
       }
     };
   }, [location.pathname]);
 
-  return null;
+  useEffect(() => {
+    if (adState === "blocked") {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+      };
+      
+      document.body.style.overflow = 'hidden';
+      document.addEventListener('keydown', handleKeyDown, { capture: true });
+      
+      return () => {
+        document.body.style.overflow = '';
+        document.removeEventListener('keydown', handleKeyDown, { capture: true });
+      };
+    } else {
+      document.body.style.overflow = '';
+    }
+  }, [adState]);
+
+  if (adState !== "blocked") {
+    return null;
+  }
+
+  return (
+    <div 
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/95 backdrop-blur-sm p-4 pointer-events-auto"
+      onKeyDown={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+    >
+      <div 
+        className="w-full max-w-md rounded-2xl border bg-card p-6 shadow-xl"
+        role="alertdialog"
+        aria-modal="true"
+      >
+        <div className="flex flex-col items-center text-center space-y-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+            <AlertTriangle className="h-6 w-6" />
+          </div>
+          
+          <div className="space-y-2">
+            <h2 className="text-xl font-semibold tracking-tight text-foreground">
+              Please Disable Your Ad Blocker
+            </h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Ads help us keep dMAT Practice Pro free. Please disable your ad blocker to continue using the website.
+            </p>
+            <p className="text-sm text-muted-foreground leading-relaxed mt-2">
+              After turning off your ad blocker, please refresh the page.
+            </p>
+          </div>
+
+          <button
+            onClick={() => window.location.reload()}
+            className="inline-flex h-10 w-full items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Refresh Page
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }

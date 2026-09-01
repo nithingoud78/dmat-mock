@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard, FileQuestion, Upload, Eye, Wrench } from "lucide-react";
+import { AdsControl } from "@/components/admin/AdsControl";
 
 export const Route = createFileRoute("/admin/dashboard")({
   head: () => ({
@@ -61,6 +62,10 @@ function AdminDashboard() {
             </Button>
           </Card>
         ))}
+      </div>
+
+      <div className="mt-8">
+        <AdsControl />
       </div>
     </div>
   );
