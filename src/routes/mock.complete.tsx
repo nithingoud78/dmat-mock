@@ -23,6 +23,7 @@ import {
   Coffee,
   FileText,
   Play,
+  RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -491,8 +492,20 @@ function CompleteMock() {
               <Play className="mr-2 h-4 w-4" /> Begin Mock Test
             </Button>
           </Card>
-          <div className="mt-8 text-center text-xs text-muted-foreground">
-            Ads are not displayed while you are taking a test.
+          <div className="mt-8 text-center text-xs text-muted-foreground space-y-2">
+            <p>
+              Ads are disabled while you take the test. For the best uninterrupted
+              experience, please refresh this page before starting your test.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.location.reload()}
+              className="h-7 px-3 text-xs"
+            >
+              <RotateCcw className="mr-1.5 h-3 w-3" />
+              Refresh Page
+            </Button>
           </div>
         </div>
       </PublicLayout>
